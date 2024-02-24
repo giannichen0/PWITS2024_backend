@@ -28,9 +28,9 @@ const getAllExams = asyncHandler(async (req, res) => {
       const report = await Report.findById(exam.report).lean().exec();
       return {
         ...exam,
-        doctor: doctor.name + " " + doctor.surname,
-        patient: patient.name + " " + patient.surname,
-        report: report.content,
+        doctor: doctor.name + " " + doctor.surname + "/ " + doctor._id,
+        patient: patient.name + " " + patient.surname + "/ " + patient._id,
+        report: report.content+ "/ " + report._id,
       };
     })
   );
@@ -137,10 +137,7 @@ const updateExam = asyncHandler(async (req, res) => {
 
   if (completed) exam.completed = completed;
 
-  // const duplicate = await Doctor.findOne({name}).lean().exec()
-  // if(duplicate && duplicate?._id.toString() !==id){
-  //     return res.status(409).json({message:"duplicate name"})
-  // }
+  
   await exam.save();
   res.status(200).json({ message: "exam updated" });
 });
@@ -158,8 +155,6 @@ const deleteExam = asyncHandler(async (req, res) => {
   const exam = await Exam.findById(id).exec();
   if (!exam) return res.status(404).json({ message: "exam non found" });
 
-  // Delete the associated report
-  //await Report.findByIdAndDelete(exam.report).exec();
 
   //aggiungi referenza al dottore deleted
   const result = await exam.deleteOne();

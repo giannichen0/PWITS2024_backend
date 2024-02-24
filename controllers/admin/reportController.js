@@ -57,11 +57,9 @@ const createNewReport = asyncHandler(async (req, res) => {
 
   const patientDoctor = await Patient.findById(patient).lean().exec();
   if (doctor.toString() !== patientDoctor.doctor.toString())
-    return res
-      .status(400)
-      .json({
-        message: "the doctor on the report must match the patient's doctor",
-      });
+    return res.status(400).json({
+      message: "the doctor on the report must match the patient's doctor",
+    });
 
   const reportObj = {
     content,
@@ -98,28 +96,30 @@ const updateReport = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "exam not found" });
 
   if (content) report.content = content;
-  if (field) report.field = field;
+  if (field) {
+    report.field = field;
+    await Exam.updateMany({ report: report._id }, { $set: { field: field } });
+  }
 
-
-  const patientDoctor = patient != null ? await Patient.findById(patient).lean().exec() : report
+  const patientDoctor = patient != null ? await Patient.findById(patient).lean().exec() : report;
   if (doctor != null) {
     if (doctor.toString() !== patientDoctor.doctor.toString())
-      return res
-        .status(400)
-        .json({
-          message: "the doctor on the report must match the patient's doctor",
-        });
+      return res.status(400).json({
+        message: "the doctor on the report must match the patient's doctor",
+      });
   }
 
   if (doctor != null) {
-    if (await checkDoctor(doctor)) report.doctor = doctor
+    if (await checkDoctor(doctor)) report.doctor = doctor;
     else return res.status(400).json({ message: "The doctor doesn't exist" });
   }
-  if(patient != null){
-    if (await checkPatient(patient)) report.patient = patient;
+  if (patient != null) {
+    if (await checkPatient(patient)){
+        report.patient = patient;
+        await Exam.updateMany({ report: report._id }, { $set: { patient: patient } });
+    }
     else return res.status(400).json({ message: "the patient doesn't exists" });
   }
-  
 
   await report.save();
   res.status(200).json({ message: "report updated" });

@@ -145,7 +145,7 @@ const updateExam = asyncHandler(async (req, res) => {
     }
   }
 
-  const reportOBJ = report != null ? await Report.findById(report).lean().exec() : exam.report
+  const reportOBJ = report != null ? await Report.findById(report).lean().exec() : exam
   if (patient != null) {
     if (patient.toString() !== reportOBJ.patient.toString())
       return res.status(404).json({

@@ -101,7 +101,7 @@ const updateReport = asyncHandler(async (req, res) => {
   if (field) report.field = field;
 
 
-  const patientDoctor = patient != null ? await Patient.findById(patient).lean().exec() : report.patient
+  const patientDoctor = patient != null ? await Patient.findById(patient).lean().exec() : report
   if (doctor != null) {
     if (doctor.toString() !== patientDoctor.doctor.toString())
       return res

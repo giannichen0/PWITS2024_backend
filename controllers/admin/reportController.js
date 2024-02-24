@@ -123,7 +123,7 @@ const deleteReport = asyncHandler(async (req, res) => {
 
   //aggiungi referenza al dottore deleted
   const result = await report.deleteOne();
-  const reply = `report and associated data deleted successfully`;
+  const reply = `report data deleted successfully`;
   return res.json({
     message: reply,
   });

@@ -28,9 +28,9 @@ const getAllExams = asyncHandler(async (req, res) => {
       const report = await Report.findById(exam.report).lean().exec();
       return {
         ...exam,
-        doctor: doctor.name + " " + doctor.surname + "/ " + doctor._id,
-        patient: patient.name + " " + patient.surname + "/ " + patient._id,
-        report: report.content+ "/ " + report._id,
+        doctor: `${doctor.name} ${doctor.surname} id: ${doctor._id}`,
+        patient: `${patient.name} ${patient.surname} id: ${patient._id}`,
+        report: `${report.content} id: ${report._id}`,
       };
     })
   );
@@ -47,48 +47,48 @@ const createNewExam = asyncHandler(async (req, res) => {
       .status(400)
       .json({ message: "All fields are required except completed" });
   }
-  if (!checkId(doctor)) {
+  //id check
+  if (!checkId(doctor))
     return res.status(400).json({ message: "doctor is not valid" });
-  }
-  if (!checkId(patient)) {
+  if (!checkId(patient))
     return res.status(400).json({ message: "patient is not valid" });
-  }
-  if (!checkId(report)) {
+  if (!checkId(report))
     return res.status(400).json({ message: "report is not valid" });
-  }
 
   //prima versione: Non permetto l'aggiunta di un esame se il dottore, il paziente e il referto non ci sono
   //seconda versione: se non ci sono li creo
-  if (!(await checkDoctor(doctor))) {
+  if (!(await checkDoctor(doctor)))
     return res
       .status(400)
       .json({ message: "the doctor associated to the exam is not defined" });
-  }
-  if (!(await checkPatient(patient))) {
+  if (!(await checkPatient(patient)))
     return res
       .status(400)
       .json({ message: "the patient associated to the exam is not defined" });
-  }
-  if (!(await checkReport(report))) {
+  if (!(await checkReport(report)))
     return res
       .status(400)
       .json({ message: "the report associated to the exam is not defined" });
-  }
-  if ((await checkReport.field) !== field) {
+
+  const reportOBJ = await Report.findById(report).lean().exec();
+
+  if (field.toString() !== reportOBJ.field.toString())
+    return res
+      .status(400)
+      .json({ message: "the field in exam must match the field in report" });
+  if (patient.toString() !== reportOBJ.patient.toString())
     return res.status(400).json({
-      message:
-        "the field of the report and the field of the exam must be the same",
+      message: "the patient in exam must match the patient in report",
     });
-  }
-  
   const examObj = {
     content,
     field,
     patient,
     doctor,
     report,
-    completed,
+    completed: completed !== null ? completed : false,
   };
+
   const exam = await Exam.create(examObj);
   if (exam) {
     res.status(201).json({ message: `new exam ${content} created` });
@@ -102,42 +102,65 @@ const createNewExam = asyncHandler(async (req, res) => {
 //@access Private
 const updateExam = asyncHandler(async (req, res) => {
   const { id, content, field, patient, doctor, report, completed } = req.body;
-  if (!id) {
-    return res.status(400).json({ message: "missing ID" });
-  }
-  if (!checkId(id)) {
-    return res.status(400).json({ message: "ID is not valid" });
-  }
-  if (!checkId(doctor)) {
+  if (!id) return res.status(400).json({ message: "missing ID" });
+
+  //id check
+  if (!checkId(id)) return res.status(400).json({ message: "ID is not valid" });
+  if (doctor != null && !checkId(doctor))
     return res.status(400).json({ message: "doctor is not valid" });
-  }
-  if (!checkId(patient)) {
+  if (patient != null && !checkId(patient))
     return res.status(400).json({ message: "patient is not valid" });
-  }
-  if (!checkId(report)) {
+  if (report != null && !checkId(report))
     return res.status(400).json({ message: "report is not valid" });
-  }
-  //no .lean() perchè vogliamo un moongose document object e non un pojo
+
   const exam = await Exam.findById(id).exec();
 
-  if (!exam || exam?._id.toString() !== id) {
+  if (!exam || exam?._id.toString() !== id)
     return res.status(404).json({ message: "exam not found" });
-  }
+
   if (content) exam.content = content;
   if (field) exam.field = field;
 
-  if (await checkPatient(patient)) exam.patient = patient;
-  else return res.status(400).json({ message: "the patient doesn't exists" });
+  if (report != null) {
+    if (await checkReport(report)) {
+      exam.report = report;
+    } else {
+      return res.status(400).json({ message: "The report doesn't exist" });
+    }
+  }
 
-  if (await checkDoctor(doctor)) exam.doctor = doctor;
-  else return res.status(400).json({ message: "the doctor doesn't exists" });
+  if (patient != null) {
+    if (await checkPatient(patient)) {
+      exam.patient = patient;
+    } else {
+      return res.status(400).json({ message: "The patient doesn't exist" });
+    }
+  }
 
-  if (await checkReport(report)) exam.report = report;
-  else return res.status(400).json({ message: "the report doesn't exists" });
+  if (doctor != null) {
+    if (await checkDoctor(doctor)) {
+      exam.doctor = doctor;
+    } else {
+      return res.status(400).json({ message: "The doctor doesn't exist" });
+    }
+  }
+
+  const reportOBJ = report != null ? await Report.findById(report).lean().exec() : exam.report
+  if (patient != null) {
+    if (patient.toString() !== reportOBJ.patient.toString())
+      return res.status(404).json({
+        message: "the patient in the exam must match the patient in the report",
+      });
+  }
+  if (field != null) {
+    if (field.toString() !== reportOBJ.field.toString())
+      return res.status(404).json({
+        message: "the field in the exam must match the field in the report",
+      });
+  }
 
   if (completed) exam.completed = completed;
 
-  
   await exam.save();
   res.status(200).json({ message: "exam updated" });
 });
@@ -155,10 +178,9 @@ const deleteExam = asyncHandler(async (req, res) => {
   const exam = await Exam.findById(id).exec();
   if (!exam) return res.status(404).json({ message: "exam non found" });
 
-
   //aggiungi referenza al dottore deleted
   const result = await exam.deleteOne();
-  const reply = `exam and associated data deleted successfully`;
+  const reply = `exam data deleted successfully`;
   return res.json({
     message: reply,
   });

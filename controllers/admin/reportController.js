@@ -1,14 +1,9 @@
 const Doctor = require("../../models/Doctor");
 const Patient = require("../../models/Patient");
-const Exam = require("../../models/Exam");
 const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler"); //async functionality, cosi posso a fare a meno del promise chaining o try/catch block
-const {
-  checkDoctor,
-  checkPatient,
-  checkReport,
-  checkId,
-} = require("../../helper/checker");
+const { checkDoctor, checkPatient, checkId } = require("../../helper/checker");
+const Exam = require("../../models/Exam");
 
 //@desc GET all reports
 //@route GET /admin/reports
@@ -39,27 +34,40 @@ const getAllReports = asyncHandler(async (req, res) => {
 //@access Private
 const createNewReport = asyncHandler(async (req, res) => {
   const { content, field, patient, doctor } = req.body;
-  if (!content || !field || !patient || !doctor) return res.status(400).json({ message: "All fields are required except" });
-  
-  if (!checkId(doctor)) return res.status(400).json({ message: "doctor is not valid" });
-  
-  if (!checkId(patient)) return res.status(400).json({ message: "patient is not valid" });
-  
+  if (!content || !field || !patient || !doctor)
+    return res.status(400).json({ message: "All fields are required except" });
+
+  if (!checkId(doctor))
+    return res.status(400).json({ message: "doctor is not valid" });
+
+  if (!checkId(patient))
+    return res.status(400).json({ message: "patient is not valid" });
 
   //prima versione: Non permetto l'aggiunta di un esame se il dottore, il paziente e il referto non ci sono
   //seconda versione: se non ci sono li creo
-  if (!(await checkDoctor(doctor))) return res.status(400).json({ message: "the doctor associated to the report is not defined" });
-  
-  if (!(await checkPatient(patient))) return res.status(400).json({ message: "the patient associated to the report is not defined" });
-  
+  if (!(await checkDoctor(doctor)))
+    return res
+      .status(400)
+      .json({ message: "the doctor associated to the report is not defined" });
+
+  if (!(await checkPatient(patient)))
+    return res
+      .status(400)
+      .json({ message: "the patient associated to the report is not defined" });
+
   const patientDoctor = await Patient.findById(patient).lean().exec();
-  if(doctor.toString() !== patientDoctor.doctor.toString()) return res.status(400).json({message : "the doctor on the report must match the patient's doctor"})
-  
+  if (doctor.toString() !== patientDoctor.doctor.toString())
+    return res
+      .status(400)
+      .json({
+        message: "the doctor on the report must match the patient's doctor",
+      });
+
   const reportObj = {
     content,
     field,
     patient,
-    doctor
+    doctor,
   };
   const report = await Report.create(reportObj);
   if (report) {
@@ -79,32 +87,40 @@ const updateReport = asyncHandler(async (req, res) => {
 
   //id check
   if (!checkId(id)) return res.status(400).json({ message: "ID is not valid" });
-  if (!checkId(doctor)) return res.status(400).json({ message: "doctor is not valid" });
-  if (!checkId(patient)) return res.status(400).json({ message: "patient is not valid" });
-  
+  if (doctor != null && !checkId(doctor))
+    return res.status(400).json({ message: "doctor is not valid" });
+  if (patient != null && !checkId(patient))
+    return res.status(400).json({ message: "patient is not valid" });
+
   const report = await Report.findById(id).exec();
 
-  if (!report || report?._id.toString() !== id) return res.status(404).json({ message: "exam not found" });
-  
+  if (!report || report?._id.toString() !== id)
+    return res.status(404).json({ message: "exam not found" });
+
   if (content) report.content = content;
   if (field) report.field = field;
 
-  const patientDoctor = await Patient.findById(patient).lean().exec();
-  console.log(JSON.stringify(patientDoctor, null, 2));
-  if(doctor.toString() !== patientDoctor.doctor.toString()) return res.status(400).json({message : "the doctor on the report must match the patient's doctor"})
 
-  if (await checkDoctor(doctor)) report.doctor = doctor;
-  else return res.status(400).json({ message: "the doctor doesn't exists" });
+  const patientDoctor = patient != null ? await Patient.findById(patient).lean().exec() : report.patient
+  if (doctor != null) {
+    if (doctor.toString() !== patientDoctor.doctor.toString())
+      return res
+        .status(400)
+        .json({
+          message: "the doctor on the report must match the patient's doctor",
+        });
+  }
 
-  if (await checkPatient(patient)) report.patient = patient;
-  else return res.status(400).json({ message: "the patient doesn't exists" });
-
-  // const duplicate = await Doctor.findOne({name}).lean().exec()
-  // if(duplicate && duplicate?._id.toString() !==id){
-  //     return res.status(409).json({message:"duplicate name"})
-  // }
+  if (doctor != null) {
+    if (await checkDoctor(doctor)) report.doctor = doctor
+    else return res.status(400).json({ message: "The doctor doesn't exist" });
+  }
+  if(patient != null){
+    if (await checkPatient(patient)) report.patient = patient;
+    else return res.status(400).json({ message: "the patient doesn't exists" });
+  }
   
-  
+
   await report.save();
   res.status(200).json({ message: "report updated" });
 });
@@ -116,10 +132,11 @@ const deleteReport = asyncHandler(async (req, res) => {
   const { id } = req.body;
   if (!id) return res.status(400).json({ message: "Missing ID" });
   if (!checkId(id)) return res.status(400).json({ message: "ID is not valid" });
-  
 
   const report = await Report.findById(id).exec();
   if (!report) return res.status(404).json({ message: "report non found" });
+
+  await Exam.deleteMany({ report: report._id });
 
   //aggiungi referenza al dottore deleted
   const result = await report.deleteOne();
@@ -129,4 +146,4 @@ const deleteReport = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = {getAllReports, createNewReport, updateReport, deleteReport}
+module.exports = { getAllReports, createNewReport, updateReport, deleteReport };

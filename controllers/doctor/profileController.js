@@ -1,4 +1,5 @@
 const Doctor = require("../../models/Doctor");
+const bcrypt = require("bcrypt"); //hash password
 const asyncHandler = require("express-async-handler");
 const {
   checkDoctor,
@@ -12,7 +13,7 @@ const {
 //@access Private
 const getDoctorProfile = asyncHandler(async (req, res) => {
   //da modificare appena implemento il jwt
-  const doctorId = req.query.doctorId;
+  const doctorId = req.params.doctorID;
   if (!doctorId) return res.status(400).json({ message: "missing doctor id" });
   if (!checkId(doctorId))
     return res.status(400).json({ message: "id is not valid" });

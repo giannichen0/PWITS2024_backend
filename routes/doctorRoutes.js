@@ -6,7 +6,7 @@ const patientController = require("../controllers/doctor/patientController")
 router.get("/profile/:doctorID", profileController.getDoctorProfile)
 router.put('/profile', profileController.updateDoctor);
 
-router.get("/patient/:doctorID", patientController.getPatients)
+router.get("/patients/:doctorID", patientController.getPatients)
     
 
 module.exports = router

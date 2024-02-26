@@ -5,6 +5,7 @@ const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler"); //async functionality, cosi posso a fare a meno del promise chaining o try/catch block
 const bcrypt = require("bcrypt"); //hash password
 const { checkDoctor, checkId } = require("../../helper/checker");
+
 //@desc GET all patients
 //@route GET /admin/patients
 //@access Private
@@ -27,8 +28,8 @@ const getAllPatients = asyncHandler(async (req, res) => {
   res.json(patientsWithDoctor);
 });
 
-//@desc Create a new patient
-//@route POST /admin/patients
+//@desc Create a new patient with doctor = logged doctor
+//@route POST /doctor/patient
 //@access Private
 const createNewPatient = asyncHandler(async (req, res) => {
   const { name, surname, password, email, telefono, doctor } = req.body;
@@ -64,8 +65,8 @@ const createNewPatient = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc Update a patient
-//@route PUT /admin/patients
+//@desc Update a specific patient 
+//@route PUT /doctor/patient
 //@access Private
 const updatePatient = asyncHandler(async (req, res) => {
   const { id, name, surname, password, email, telefono, doctor } = req.body;

@@ -12,6 +12,9 @@ const {
   checkPatient,
 } = require("../../helper/checker");
 
+//@desc POST send a email to patient 
+//@route POST /utility/mail
+//@access Private
 const emailSender = asyncHandler(async (req, res) => {
   const { doctor, patient, exam } = req.body;
   if (!doctor || !exam)
@@ -101,6 +104,9 @@ const emailSender = asyncHandler(async (req, res) => {
   //res.status(200).json({message : "the exam does not exceed 60 days"})
 });
 
+//@desc GET generate a sample pdf and send it back
+//@route PUT /utility/pdf
+//@access Private
 const pdfGenerator = asyncHandler(async (req, res) => {
   const htmlContent = `
     <html>

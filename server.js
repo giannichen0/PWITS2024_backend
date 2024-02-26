@@ -32,12 +32,17 @@ app.use("/", express.static(path.join(__dirname, "public")));
 //route for splashpage of my API
 app.use("/", require("./routes/root"));
 
+app.use("/auth", require("./routes/authRoutes"))
+
 app.use("/admin", require("./routes/adminRoutes"))
 
 app.use("/doctor", require("./routes/doctorRoutes"))
 
+app.use("/patient", require("./routes/patientRoutes"))
 
-app.use("/utility", require("./routes/utilityRoutes") )
+app.use("/utility", require("./routes/utilityRoutes"))
+
+
 
 //gestione delle rotte non contemplate nell'API
 app.all("*", (req, res) => {

@@ -49,7 +49,8 @@ const emailSender = asyncHandler(async (req, res) => {
   if (!exam.completed && timeDifferenceMs > 60 * 24 * 1000) {
     const doctorExam = await Doctor.findById(examObj.doctor).lean().exec();
     const email = patientObj.email;
-    const html = `<h1> Clinica Rossi</h1> 
+    const html = 
+    `<h1> Clinica Rossi</h1> 
     <h1>Paziente ${patientObj.name} ${patientObj.surname}</h1>
     <h1>Medico di base: ${doctorObj.name}</h1>
     <h1>Medico che effetuerà la visita: ${doctorExam.name}</h1>
@@ -131,7 +132,7 @@ const pdfGenerator = asyncHandler(async (req, res) => {
     } else {
       // Set content type and send PDF buffer as response
       res.setHeader("Content-Type", "application/pdf");
-      res.send(buffer);
+      res.status(200).send(buffer);
     }
   });
 });

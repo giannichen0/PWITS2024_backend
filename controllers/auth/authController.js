@@ -77,8 +77,9 @@ const login = asyncHandler(async (req, res) => {
 //@route GET /auth/refresh
 //@access Public
 const refresh = (req, res) => {
-    const cookies = req.cookies;
-    if (!cookies?.jwt) return res.status(401).json({ message: "unauthorized" });
+    const cookies = req.cookies
+
+    if (!cookies?.jwt) return res.status(401).json({ message: 'Unauthorized' })
     const refreshToken = cookies.jwt;
 
     //verifica
@@ -103,7 +104,7 @@ const refresh = (req, res) => {
                         role = "patient";
                     } else {
                         role = null;
-                        res.status(401).json({ message: "unauthorized" });
+                        res.status(401).json({ message: "unauthorized, No User" });
                     }
                 }
             }

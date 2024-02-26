@@ -36,10 +36,19 @@ const emailSender = asyncHandler(async (req, res) => {
       .status(400)
       .json({ message: "the doctor must be the same patient's doctor" });
 
-  const timeDifferenceMs = Date.now() - examObj.updatedAt.getTime(); 
+  const timeDifferenceMs = Date.now() - examObj.createdAt.getTime(); 
   if (!exam.completed && timeDifferenceMs > 60 * 24 * 1000) {
+    const doctorExam = await Doctor.findById(examObj.doctor).lean().exec()
     const email = patientObj.email;
-    const html = `<h1> questo è il primo mail inviato con nodemailer</h1>`;
+    const html = `<h1> Clinica Rossi</h1> 
+    <h1>Paziente ${patientObj.name} ${patientObj.surname}</h1>
+    <h1>Medico di base: ${doctorObj.name}</h1>
+    <h1>Medico che effetuerà la visita: ${doctorExam.name}</h1>
+    <h1>visita di tipo: ${examObj.field}</h1>
+    <h1>dettaglio della visita: ${examObj.content}</h1>
+    <h1>visita creata in data: ${examObj.createdAt.toLocaleDateString("it-IT", { day: '2-digit', month: '2-digit', year: 'numeric' })}</h1>
+    <h1>la visita risulta ancora non effettuata</h1>
+    `;
     const transport = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -77,6 +86,7 @@ const emailSender = asyncHandler(async (req, res) => {
 
   //res.status(200).json({message : "the exam does not exceed 60 days"})
 });
+
 
 
 module.exports = { emailSender };

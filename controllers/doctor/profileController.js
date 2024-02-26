@@ -25,11 +25,19 @@ const getDoctorProfile = asyncHandler(async (req, res) => {
 const updateDoctor = asyncHandler(async (req, res) => {
   //da modificare appena implemento il jwt
   const { id, name, surname, password, email, telefono } = req.body;
-  if (!id) return res.status(400).json({ message: "missing id" });
-  if (!checkId(id)) return res.status(400).json({ message: "ID is not valid" });
+  if (!id) {
+    return res.status(400).json({ message: "missing id" });
+  }
+  if (!checkId(id)) {
+    return res.status(400).json({ message: "ID is not valid" });
+  }
 
+  //no .lean() perchè vogliamo un moongose document object e non un pojo
   const doctor = await Doctor.findById(id).exec();
-  if (!doctor || doctor?._id.toString() !== id) return res.status(400).json({ message: "doctor not found" });
+
+  if (!doctor || doctor?._id.toString() !== id) {
+    return res.status(400).json({ message: "doctor not found" });
+  }
   if (name) doctor.name = name;
   if (surname) doctor.surname = surname;
   if (password) {
@@ -38,6 +46,8 @@ const updateDoctor = asyncHandler(async (req, res) => {
   }
   if (email) doctor.email = email;
   if (telefono) doctor.telefono = telefono;
+
+  
   await doctor.save();
   res.status(200).json({ message: "doctor updated" });
   

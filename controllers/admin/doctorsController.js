@@ -66,10 +66,7 @@ const updateDoctor = asyncHandler(async (req, res) => {
   if (email) doctor.email = email;
   if (telefono) doctor.telefono = telefono;
 
-  // const duplicate = await Doctor.findOne({name}).lean().exec()
-  // if(duplicate && duplicate?._id.toString() !==id){
-  //     return res.status(409).json({message:"duplicate name"})
-  // }
+  
   await doctor.save();
   res.status(200).json({ message: "doctor updated" });
 });

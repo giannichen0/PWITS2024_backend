@@ -37,6 +37,7 @@ app.use("/admin", require("./routes/adminRoutes"))
 app.use("/doctor", require("./routes/doctorRoutes"))
 
 
+app.use("/utility", require("./routes/utilityRoutes") )
 
 //gestione delle rotte non contemplate nell'API
 app.all("*", (req, res) => {

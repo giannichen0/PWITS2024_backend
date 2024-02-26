@@ -1,12 +1,7 @@
 const Doctor = require("../../models/Doctor");
 const bcrypt = require("bcrypt"); //hash password
 const asyncHandler = require("express-async-handler");
-const {
-  checkDoctor,
-  checkPatient,
-  checkReport,
-  checkId,
-} = require("../../helper/checker");
+const {checkId} = require("../../helper/checker");
 
 //@desc GET doctor profile
 //@route GET /doctor/profile
@@ -15,8 +10,7 @@ const getDoctorProfile = asyncHandler(async (req, res) => {
   //da modificare appena implemento il jwt
   const doctorId = req.params.doctorID;
   if (!doctorId) return res.status(400).json({ message: "missing doctor id" });
-  if (!checkId(doctorId))
-    return res.status(400).json({ message: "id is not valid" });
+  if (!checkId(doctorId)) return res.status(400).json({ message: "id is not valid" });
 
   const doctor = await Doctor.findById(doctorId).lean().exec();
   if (!doctor || doctor?._id.toString() !== doctorId) return res.status(400).json({ message: "doctor not found" });

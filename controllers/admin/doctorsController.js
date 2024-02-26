@@ -1,6 +1,5 @@
 const Doctor = require("../../models/Doctor");
 const Patient = require("../../models/Patient");
-const Exam = require("../../models/Exam");
 const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler"); //async functionality, cosi posso a fare a meno del promise chaining o try/catch block
 const bcrypt = require("bcrypt"); //hash password

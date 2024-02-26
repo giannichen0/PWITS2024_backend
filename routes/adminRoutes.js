@@ -1,9 +1,19 @@
 const express = require("express");
 const router = express.Router();
+const adminController = require("../controllers/admin/adminController")
 const doctorsContoller = require("../controllers/admin/doctorsController");
 const patientsController = require("../controllers/admin/patientsController");
 const examsController = require("../controllers/admin/examController")
 const reportController = require("../controllers/admin/reportController")
+const verifyJWT = require("../middleware/verifyJWT")
+const isAdmin = require("../middleware/isAdmin")
+
+router.use(verifyJWT)
+router.use(isAdmin)
+
+
+
+router.route("/").post(adminController.createNewAdmin)
 
 router
   .route("/doctors")
@@ -32,5 +42,7 @@ router
   .post(reportController.createNewReport)
   .put(reportController.updateReport)
   .delete(reportController.deleteReport);
+
+  
 
 module.exports = router;

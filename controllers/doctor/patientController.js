@@ -24,6 +24,9 @@ const getPatients = asyncHandler(async (req, res) => {
     res.json(patients);
 });
 
+//@desc POST create patient with doctor = doctorID
+//@route POST /doctor/patient
+//@access Private
 const createNewPatient = asyncHandler(async (req, res) => {
     const { name, surname, password, email, telefono } = req.body;
     const doctor = await jwtDecoder(req, res);
@@ -61,6 +64,9 @@ const createNewPatient = asyncHandler(async (req, res) => {
     }
 });
 
+//@desc PUT update patient with doctor = doctorID
+//@route PUT /doctor/patient
+//@access Private
 const updatePatient = asyncHandler(async (req, res) => {
     const { id, name, surname, password, email, telefono} = req.body;
     const doctor = await jwtDecoder(req,res)

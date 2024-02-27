@@ -1,18 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const profileController = require("../controllers/doctor/profileController")
-const patientController = require("../controllers/doctor/patientController")
-const verifyJWT = require("../middleware/verifyJWT")
-const {isDoctor} = require("../middleware/verifyRole")
+const profileController = require("../controllers/doctor/profileController");
+const patientController = require("../controllers/doctor/patientController");
+const verifyJWT = require("../middleware/verifyJWT");
+const { isDoctor } = require("../middleware/verifyRole");
 
-router.use(verifyJWT)
-router.use(isDoctor)
+router.use(verifyJWT);
+router.use(isDoctor);
 
-router.get("/profile", profileController.getDoctorProfile)
-router.put('/profile', profileController.updateDoctor);
+router
+    .route("/profile")
+    .get(profileController.getDoctorProfile)
+    .post(profileController.updateDoctor);
 
-router.get("/patients/", patientController.getPatients)
-    
+router
+    .route("patients")
+    .get(patientController.getPatients)
+    .post(patientController.createNewPatient)
+    .put(patientController.updatePatient);
 
-module.exports = router
-  
+module.exports = router;

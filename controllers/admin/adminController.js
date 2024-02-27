@@ -2,6 +2,14 @@ const Admin = require("../../models/Admin");
 const bcrypt = require("bcrypt"); //hash password
 const asyncHandler = require("express-async-handler");
 
+const getAdmins = asyncHandler(async (req,res)=>{
+  const admins = await Admin.find().lean().exec()
+  if(!admins?.length) return res.status(200).json({message : "No admins"})
+
+  res.json(admins)
+})
+
+
 const createNewAdmin = asyncHandler(async (req, res) => {
     const { name, surname, password, email, telefono } = req.body;
     if (!name || !surname || !password || !email || !telefono) {
@@ -18,4 +26,4 @@ const createNewAdmin = asyncHandler(async (req, res) => {
       res.status(400).json({ message: "Invalid admin data " });
     }
   });
-module.exports = {createNewAdmin}
+module.exports = {createNewAdmin, getAdmins}

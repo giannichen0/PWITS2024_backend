@@ -5,7 +5,8 @@ const Patient = require("../../models/Patient");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const asyncHandler = require("express-async-handler");
-
+const {checkId} = require("../../helper/checker")
+ 
 //@desc POST login
 //@route POST /auth
 //@access Public
@@ -77,10 +78,9 @@ const login = asyncHandler(async (req, res) => {
 //@route GET /auth/refresh
 //@access Public
 const refresh = (req, res) => {
-    const cookies = req.cookies
-    console.log(cookies)
+    const cookies = req.cookies;
 
-    if (!cookies?.jwt) return res.status(401).json({ message: 'Unauthorized' })
+    if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
     const refreshToken = cookies.jwt;
 
     //verifica
@@ -91,21 +91,22 @@ const refresh = (req, res) => {
             if (err) return res.status(403).json({ message: "forbidden" });
             let role;
             let foundUser = await Admin.findById(decoded._id).lean().exec();
+            
             if (foundUser) {
                 role = "admin";
             } else {
                 foundUser = await Doctor.findById(decoded._id).lean().exec();
-                if (foundUser) {
+                if (foundUser + "doc") {
                     role = "doctor";
                 } else {
-                    foundUser = await Patient.findById(decoded._id)
-                        .lean()
-                        .exec();
+                    foundUser = await Patient.findById(decoded._id).lean().exec();
                     if (foundUser) {
                         role = "patient";
                     } else {
                         role = null;
-                        res.status(401).json({ message: "unauthorized, No User" });
+                        res.status(401).json({
+                            message: "unauthorized, No User",
+                        });
                     }
                 }
             }
@@ -122,7 +123,7 @@ const refresh = (req, res) => {
                 { expiresIn: "3days" }
             );
 
-            res.json({accessToken})
+            res.json({ accessToken });
         })
     );
 };
@@ -131,10 +132,12 @@ const refresh = (req, res) => {
 //@route POST /auth/logout
 //@access Public
 const logout = (req, res) => {
-    const cookies = req.cookies
-    if (!cookies?.jwt) return res.status(204).json({message : "the cookies doesn't exist"}) //No content
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true })
-    res.json({ message: 'Cookie cleared' })
-}
+    const cookies = req.cookies;
+    if (!cookies?.jwt)
+        return res.status(204).json({ message: "the cookies doesn't exist" }); //No content
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "None"
+    //,secure: true 
+});
+    res.json({ message: "Cookie cleared" });
+};
 module.exports = { login, refresh, logout };
-

@@ -13,7 +13,7 @@ const reportController = require("../controllers/admin/reportController")
 
 
 
-router.route("/").post(adminController.createNewAdmin)
+router.route("/").post(adminController.createNewAdmin).get(adminController.getAdmins)
 
 router
   .route("/doctors")

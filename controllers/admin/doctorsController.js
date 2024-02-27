@@ -4,7 +4,6 @@ const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler"); //async functionality, cosi posso a fare a meno del promise chaining o try/catch block
 const bcrypt = require("bcrypt"); //hash password
 const {checkId} = require("../../helper/checker")
-const jwtDecoder = require("../../helper/jwtDecoder")
 
 //@desc GET all doctors
 //@route GET /admin/doctors

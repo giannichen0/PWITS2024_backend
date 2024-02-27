@@ -26,7 +26,7 @@ const isPatient = (req, res, next) => {
 };
 
 const isAdminOrDoctor = (req, res, next) => {
-    if (req.role !== "doctor" || req.role !== "admin")
+    if (req.role !== "doctor" && req.role !== "admin")
         return res
             .status(403)
             .json({ message: "Forbidden. Doctor or admin acess required " });

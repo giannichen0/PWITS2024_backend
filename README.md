@@ -38,6 +38,7 @@ Se elimino un Report, elimino tutti gli Exam che hanno come soggetto quel Report
 
 ## Endpoints
 /doctor e /patient usano l'access token per prendere l'id dell'utente loggato
+
 Tutte le rotte implementano le logiche descritte in mongoDb Schemas
 - /auth : Pubblica
     - / : 

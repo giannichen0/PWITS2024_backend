@@ -141,4 +141,5 @@ const logout = (req, res) => {
 });
     res.json({ message: "Cookie cleared" });
 };
+
 module.exports = { login, refresh, logout };

@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const utilityController = require("../controllers/utility/utilityController")
-// const verifyJWT = require("../middleware/verifyJWT")
+const utilityController = require("../controllers/utility/utilityController");
+const verifyJWT = require("../middleware/verifyJWT");
+const {isAdminOrDoctor} = require("../middleware/verifyRole")
 
-// router.use(verifyJWT)
 
-router.post("/mail", utilityController.emailSender)
-router.get("/pdf", utilityController.pdfGenerator)
-module.exports = router
+router.post("/mail",[verifyJWT,isAdminOrDoctor], utilityController.emailSender);
+router.get("/pdf", utilityController.pdfGenerator);
+module.exports = router;

@@ -5,7 +5,6 @@ const Patient = require("../../models/Patient");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const asyncHandler = require("express-async-handler");
-const {checkId} = require("../../helper/checker")
  
 //@desc POST login
 //@route POST /auth
@@ -18,15 +17,15 @@ const login = asyncHandler(async (req, res) => {
 
     //check sul ruolo e esistenza di user
     let role;
-    let foundUser = await Admin.findOne({ email }).lean().exec();
+    let foundUser = await Admin.findOne({ email }).exec();
     if (foundUser) {
         role = "admin";
     } else {
-        foundUser = await Doctor.findOne({ email }).lean().exec();
+        foundUser = await Doctor.findOne({ email }).exec();
         if (foundUser) {
             role = "doctor";
         } else {
-            foundUser = await Patient.findOne({ email }).lean().exec();
+            foundUser = await Patient.findOne({ email }).exec();
             if (foundUser) {
                 role = "patient";
             } else {
@@ -53,12 +52,13 @@ const login = asyncHandler(async (req, res) => {
                 role: role,
             },
         },
+
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "3days" }
     );
 
     const refreshToken = jwt.sign(
-        { name: foundUser.name, email: foundUser.email, id: foundUser._id },
+        {user:{ name: foundUser.name, email: foundUser.email, id: foundUser._id, role: foundUser.role }},
         process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: "5days" }
     );
@@ -88,35 +88,36 @@ const refresh = (req, res) => {
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
         asyncHandler(async (err, decoded) => {
-            if (err) return res.status(403).json({ message: "forbidden" });
-            let role;
-            let foundUser = await Admin.findById(decoded._id).lean().exec();
             
-            if (foundUser) {
-                role = "admin";
-            } else {
-                foundUser = await Doctor.findById(decoded._id).lean().exec();
-                if (foundUser + "doc") {
-                    role = "doctor";
-                } else {
-                    foundUser = await Patient.findById(decoded._id).lean().exec();
-                    if (foundUser) {
-                        role = "patient";
-                    } else {
-                        role = null;
-                        res.status(401).json({
-                            message: "unauthorized, No User",
-                        });
-                    }
-                }
-            }
+            if (err) return res.status(403).json({ message: "forbidden" });
+            //let role;
+            //console.log(decoded)
+            //let foundUser = await Admin.findById(decoded._id).lean().exec();
+            // if (foundUser) {
+            //     role = "admin";
+            // } else {
+            //     foundUser = await Doctor.findById(decoded._id).lean().exec();
+            //     if (foundUser + "doc") {
+            //         role = "doctor";
+            //     } else {
+            //         foundUser = await Patient.findById(decoded._id).lean().exec();
+            //         if (foundUser) {
+            //             role = "patient";
+            //         } else {
+            //             role = null;
+            //             res.status(401).json({
+            //                 message: "unauthorized, No User",
+            //             });
+            //         }
+            //     }
+            // }
             const accessToken = jwt.sign(
                 {
                     user: {
-                        name: foundUser.name,
-                        email: foundUser.email,
-                        id: foundUser._id,
-                        role: role,
+                        name: decoded.name,
+                        email: decoded.email,
+                        id: decoded._id,
+                        role: decoded._id
                     },
                 },
                 process.env.ACCESS_TOKEN_SECRET,

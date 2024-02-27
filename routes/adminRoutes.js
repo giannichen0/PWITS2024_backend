@@ -5,11 +5,11 @@ const doctorsContoller = require("../controllers/admin/doctorsController");
 const patientsController = require("../controllers/admin/patientsController");
 const examsController = require("../controllers/admin/examController")
 const reportController = require("../controllers/admin/reportController")
-// const verifyJWT = require("../middleware/verifyJWT")
-// const isAdmin = require("../middleware/isAdmin")
+const verifyJWT = require("../middleware/verifyJWT")
+const isAdmin = require("../middleware/isAdmin")
 
-// router.use(verifyJWT)
-// router.use(isAdmin)
+router.use(verifyJWT)
+router.use(isAdmin)
 
 
 

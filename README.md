@@ -1,25 +1,25 @@
-## Parte backend del project work ITS Ferrara 2024 by Gianni Chen
+# Parte backend del project work ITS Ferrara 2024 by Gianni Chen
 
-#### installation:
+## Installation:
 1. __npm install__
 2. __crea un .env file con i tuoi dati__
 3. __npm start__ o __npm run dev__ se vuoi lanciarlo in development 
 
-#### .env file requirements:
+## .env file requirements:
 - MONGO_DB_URI: la tua connection string di mongoDb
 - ACCESS_TOKEN_SECRET: il tuo access_token_secret
 - REFRESH_TOKEN_SECRET: il tuo refresh_token_secret
 - APP_PASSWORD_GIANNICHEN: il tuo gmail app password oppure altro email provider password
 
-#### Gmail
+## Gmail
 Se vuoi usare Gmail devi andare in impostazioni del tuo account -> sicurezza. Qua accertati che hai il 2FA attivato e generare una app password
 
-#### mongoDb Schemas
+## MongoDb Schemas
 5 collection: Admin, Doctor, Patient, Report, Exam
 - Patient ha un vincolo su Doctor
 - Report ha un vincolo su Doctor e Patient
 - Exam ha un vincolo su Patient, Report
-###### extra:
+#### Extra:
 Il campo "doctor" in Exam indica il dottore che effetuerà la visita
 
 Il campo "field" in Exam e Report devono coincidere
@@ -36,7 +36,7 @@ Se elimino un Patient, elimino tutti gli Exam e Report che hanno un vincolo con 
 
 Se elimino un Report, elimino tutti gli Exam che hanno come soggetto quel Report
 
-#### Endpoints
+## Endpoints
 /doctor e /patient usano l'access token per prendere l'id dell'utente loggato
 Tutte le rotte implementano le logiche descritte in mongoDb Schemas
 - /auth : Pubblica

@@ -1,9 +1,9 @@
 ## Parte backend del project work ITS Ferrara 2024 by Gianni Chen
 
 #### installation:
-1. ___npm install__
-2. ___crea un .env file con i tuoi dati__
-3. ___npm start__ o __npm run dev__ se vuoi lanciarlo in development 
+1. __npm install__
+2. __crea un .env file con i tuoi dati__
+3. __npm start__ o __npm run dev__ se vuoi lanciarlo in development 
 
 #### .env file requirements:
 - MONGO_DB_URI: la tua connection string di mongoDb
@@ -21,12 +21,19 @@ Se vuoi usare Gmail devi andare in impostazioni del tuo account -> sicurezza. Qu
 - Exam ha un vincolo su Patient, Report
 ###### extra:
 Il campo "doctor" in Exam indica il dottore che effetuerà la visita
+
 Il campo "field" in Exam e Report devono coincidere
+
 il campo "patient" in Exam e Report devono coincidere
+
 il campo "completed" in Exam di deafult è false
+
 Il campo "doctor" in Report deve coincidere con il campo "dottore" del paziente
+
 Se elimino un Doctor, elimino tutti i Patient e Report che hanno un vincolo con quel Doctor
+
 Se elimino un Patient, elimino tutti gli Exam e Report che hanno un vincolo con quel Doct
+
 Se elimino un Report, elimino tutti gli Exam che hanno come soggetto quel Report
 
 #### Endpoints

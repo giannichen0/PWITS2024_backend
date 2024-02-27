@@ -4,6 +4,7 @@ const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler"); //async functionality, cosi posso a fare a meno del promise chaining o try/catch block
 const bcrypt = require("bcrypt"); //hash password
 const {checkId} = require("../../helper/checker")
+const jwtDecoder = require("../../helper/jwtDecoder")
 
 //@desc GET all doctors
 //@route GET /admin/doctors
@@ -21,6 +22,7 @@ const getAllDoctors = asyncHandler(async (req, res) => {
 //@access Private
 const createNewDoctor = asyncHandler(async (req, res) => {
   const { name, surname, password, email, telefono } = req.body;
+  console.log(req.body)
   if (!name || !surname || !password || !email || !telefono) {
     return res.status(400).json({ message: "All fields are required" });
   }

@@ -25,7 +25,6 @@ const getDoctorProfile = asyncHandler(async (req, res) => {
 //@access Private
 const updateDoctor = asyncHandler(async (req, res) => {
   //da modificare appena implemento il jwt
-  
   const {name, surname, password, email, telefono } = req.body;
   const id = await jwtDecoder(req, res)
   if (!id) {

@@ -5,7 +5,7 @@ const { checkId } = require("../../helper/checker");
 const Patient = require("../../models/Patient");
 const jwtDecoder = require("../../helper/jwtDecoder");
 
-//@desc GET a specific patient
+//@desc GET all patient with doctor = doctorId
 //@route GET /doctor/patient
 //@access Private
 const getPatients = asyncHandler(async (req, res) => {

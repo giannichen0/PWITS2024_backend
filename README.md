@@ -40,6 +40,8 @@ Se elimino un Report, elimino tutti gli Exam che hanno come soggetto quel Report
 /doctor e /patient usano l'access token per prendere l'id dell'utente loggato
 
 Tutte le rotte implementano le logiche descritte in mongoDb Schemas
+
+"?" indica che quella property può essere opzionale
 - /auth : Pubblica
     - / : 
         - POST, genera un access token(id, role) e setta un httpOnly cookie con opzione secure=true contenente il refresh token(id,role). body = {email, password}.

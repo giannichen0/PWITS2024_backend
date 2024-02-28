@@ -140,7 +140,7 @@ const pdfGenerator = asyncHandler(async (req, res) => {
     const htmlTemplate = await fsPromises.readFile(path.join(__dirname, "..", "..","template", "pdf.html"), "utf-8")
     const htmlContent = Object.entries(replacements).reduce((html,[placeholder, value])=> html.replace(placeholder, value), htmlTemplate)
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         ignoreDefaultArgs: ["--disable-extensions"],
         args: [
           "--no-sandbox",

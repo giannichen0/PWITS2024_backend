@@ -29,7 +29,7 @@ const getAllReports = asyncHandler(async (req, res) => {
   res.json(reportWithDoctorPatient);
 });
 
-//@desc Create a new report
+//@desc POST Create a new report
 //@route POST /admin/reports
 //@access Private
 const createNewReport = asyncHandler(async (req, res) => {

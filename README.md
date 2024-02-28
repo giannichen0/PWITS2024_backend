@@ -28,11 +28,11 @@ il campo "patient" in Exam e Report devono coincidere
 
 il campo "completed" in Exam di deafult è false
 
-Il campo "doctor" in Report deve coincidere con il campo "dottore" del paziente
+Il campo "doctor" in Report deve coincidere con il campo "doctor" del paziente
 
 Se elimino un Doctor, elimino tutti i Patient e Report che hanno un vincolo con quel Doctor
 
-Se elimino un Patient, elimino tutti gli Exam e Report che hanno un vincolo con quel Doct
+Se elimino un Patient, elimino tutti gli Exam e Report che hanno un vincolo con quel Doctor
 
 Se elimino un Report, elimino tutti gli Exam che hanno come soggetto quel Report
 

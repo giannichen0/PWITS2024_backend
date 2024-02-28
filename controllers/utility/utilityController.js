@@ -2,9 +2,12 @@ require("dotenv").config();
 const Doctor = require("../../models/Doctor");
 const Patient = require("../../models/Patient");
 const Exam = require("../../models/Exam");
+const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler");
 const nodemailer = require("nodemailer");
-const PDFDocument = require("pdfkit");
+const puppeteer = require("puppeteer");
+const path = require("path");
+const fsPromises = require("fs").promises
 
 const {
     checkId,
@@ -109,28 +112,40 @@ const emailSender = asyncHandler(async (req, res) => {
 //@route PUT /utility/pdf
 //@access Private
 const pdfGenerator = asyncHandler(async (req, res) => {
-    const doc = new PDFDocument();
-    // Create a buffer to store the PDF content
-    let buffer = Buffer.from([]);
+    //const {doctor, patient, exam, report} = req.body
+    const doctorId = "65d7b5220cb368577b692517";
+    const patientId = "65d7a960ea4fca27e3b32243";
+    const examId = "65da347cf238aa23b6b77fee";
+    const reportId = "65da1566bc919ca93233a242";
 
-    // Pipe the PDF content to the buffer
-    doc.on("data", (chunk) => {
-        buffer = Buffer.concat([buffer, chunk]);
-    });
+    const doctor = await Doctor.findById(doctorId).lean().exec();
+    const patient = await Patient.findById(patientId).lean().exec();
+    const exam = await Exam.findById(examId).lean().exec();
+    const report = await Report.findById(reportId).lean().exec();
+    const doctorReport = await Doctor.findById(report.doctor).lean().exec();
+    
+    const replacements = {
+        "{{data}}": new Date().toLocaleDateString("it-IT", {day: "2-digit",month: "2-digit",year: "numeric"}),
+        "{{exam}}" : examId,
+        "{{patient}}" : patient.name + " " + patient.surname ,
+        "{{doctor}}" : doctor.name +" " + doctor.surname,
+        "{{doctorReport}}" : doctorReport.name +" " + doctorReport.surname,
+        "{{report}}" : reportId,
+        "{{examField}}" : exam.field,
+        "{{examContent}}" : exam.content,
+        "{{completed}}" : exam.completed == true ? "effettuato":"non effettuato",
+        "{{examCreatedAt}}": exam.createdAt.toLocaleDateString("it-IT", {day: "2-digit",month: "2-digit",year: "numeric"}),
+    }
 
-    // When the PDF document is finished, resolve with the buffer
-    doc.on("end", () => {
-        res.setHeader("Content-Type", "application/pdf");
-        res.status(200).send(buffer);
-    });
-    doc.fontSize(20);
-    doc.text("Hello, PDFKit!", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(14);
-    doc.text("This is a simple PDF generated using PDFKit.");
-
-    // Finalize the PDF document
-    doc.end();
+    const htmlTemplate = await fsPromises.readFile(path.join(__dirname, "..", "..","template", "pdf.html"), "utf-8")
+    const htmlContent = Object.entries(replacements).reduce((html,[placeholder, value])=> html.replace(placeholder, value), htmlTemplate)
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(htmlContent);
+    const buffer = await page.pdf({ format: "A4", printBackground : true });
+    // Close the browser
+    await browser.close();
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(buffer);
 });
-
 module.exports = { emailSender, pdfGenerator };

@@ -34,7 +34,6 @@ const updateDoctor = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "ID is not valid" });
   }
 
-  //no .lean() perchè vogliamo un moongose document object e non un pojo
   const doctor = await Doctor.findById(id).exec();
 
   if (!doctor || doctor?._id.toString() !== id) {

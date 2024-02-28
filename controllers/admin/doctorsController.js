@@ -97,8 +97,6 @@ const deleteDoctor = asyncHandler(async (req, res) => {
       await Patient.findByIdAndDelete(patient._id).exec();
     }
   }
-  // Delete the doctor
-  //await Doctor.findByIdAndDelete(id).exec();
   
   //aggiungi referenza al dottore deleted
   const result = await doctor.deleteOne()

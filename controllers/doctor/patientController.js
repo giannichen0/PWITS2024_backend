@@ -1,7 +1,7 @@
 const Doctor = require("../../models/Doctor");
 const bcrypt = require("bcrypt"); //hash password
 const asyncHandler = require("express-async-handler");
-const { checkId } = require("../../helper/checker");
+const { checkId, checkDoctor } = require("../../helper/checker");
 const Patient = require("../../models/Patient");
 const jwtDecoder = require("../../helper/jwtDecoder");
 
@@ -36,6 +36,7 @@ const createNewPatient = asyncHandler(async (req, res) => {
 
     const hashedPwd = await bcrypt.hash(password, 10);
 
+    //possibile togliere questi due check. Se è entrato il jwt è valido
     if (!checkId(doctor)) {
         return res.status(400).json({ message: "doctor is not valid" });
     }
@@ -68,15 +69,15 @@ const createNewPatient = asyncHandler(async (req, res) => {
 //@route PUT /doctor/patient
 //@access Private
 const updatePatient = asyncHandler(async (req, res) => {
-    const { id, name, surname, password, email, telefono} = req.body;
-    const doctor = await jwtDecoder(req,res)
+    const { id, name, surname, password, email, telefono } = req.body;
+    const doctor = await jwtDecoder(req, res);
     if (!id) {
         return res.status(400).json({ message: "missing ID" });
     }
     if (!checkId(id)) {
         return res.status(400).json({ message: "ID is not valid" });
     }
-   
+
     const patient = await Patient.findById(id).exec();
 
     if (!patient || patient?._id.toString() !== id) {
@@ -92,6 +93,7 @@ const updatePatient = asyncHandler(async (req, res) => {
     if (email) patient.email = email;
     if (telefono) patient.telefono = telefono;
 
+
     if (doctor != null && !checkId(doctor)) {
         return res.status(400).json({ message: "doctor is not valid" });
     }
@@ -104,9 +106,34 @@ const updatePatient = asyncHandler(async (req, res) => {
                 .json({ message: "The doctor doesn't exist" });
         }
     }
+    patient.doctor = doctor;
 
     await patient.save();
     res.status(200).json({ message: "patient updated" });
 });
 
-module.exports = { getPatients, createNewPatient, updatePatient };
+const deletePatient = asyncHandler(async (req, res) => {
+    const { id } = req.body;
+    const doctorId =await jwtDecoder(req,res)
+    if (!id) return res.status(400).json({ message: "Missing ID" });
+    if (!checkId(id)) {
+        return res.status(400).json({ message: "ID is not valid" });
+    }
+
+    const patient = await Patient.findById(id).exec();
+    if (!patient) return res.status(404).json({ message: "Patient non found" });
+    if(patient.doctor != doctorId) return res.status(404).json({message : "the patient doctor is different than the logged doctor"})
+    await Exam.deleteMany({ patient: patient._id }).exec();
+
+    // Delete all reports associated with the patient
+    await Report.deleteMany({ patient: patient._id }).exec();
+
+    //aggiungi referenza al dottore deleted
+    const result = await patient.deleteOne();
+    const reply = `patient and associated data deleted successfully`;
+    return res.json({
+        message: reply,
+    });
+});
+
+module.exports = { getPatients, createNewPatient, updatePatient, deletePatient };

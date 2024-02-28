@@ -139,8 +139,17 @@ const pdfGenerator = asyncHandler(async (req, res) => {
 
     const htmlTemplate = await fsPromises.readFile(path.join(__dirname, "..", "..","template", "pdf.html"), "utf-8")
     const htmlContent = Object.entries(replacements).reduce((html,[placeholder, value])=> html.replace(placeholder, value), htmlTemplate)
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        headless: false,
+        ignoreDefaultArgs: ["--disable-extensions"],
+        args: [
+          "--no-sandbox",
+          "--use-gl=egl",
+          "--disable-setuid-sandbox",
+        ]});
+
     const page = await browser.newPage();
+    await page.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36")
     await page.setContent(htmlContent);
     const buffer = await page.pdf({ format: "A4", printBackground : true });
     // Close the browser

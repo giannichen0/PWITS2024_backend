@@ -5,6 +5,7 @@ const {isPatient} = require("../middleware/verifyRole")
 router.use(verifyJWT)
 router.use(isPatient)
 
+router.route("/profile").get().put()
 
-
+router.get("/doctor")
 module.exports = router

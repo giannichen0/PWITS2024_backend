@@ -117,6 +117,7 @@ const updateReport = asyncHandler(async (req, res) => {
     if (await checkPatient(patient)){
         report.patient = patient;
         await Exam.updateMany({ report: report._id }, { $set: { patient: patient } });
+        
     }
     else return res.status(400).json({ message: "the patient doesn't exists" });
   }

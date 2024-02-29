@@ -12,9 +12,9 @@ const getDoctor = asyncHandler(async (req, res) => {
   if (!patientId) return res.status(400).json({ message: "missing doctor id" });
   if (!checkId(patientId)) return res.status(400).json({ message: "id is not valid" });
 
-  const patient = await Patient.findById(patientId).lean().exec();
+  const patient = await Patient.findById(patientId).lean().exec()
   const doctor = await Doctor.findById(patient.doctor).lean().exec()
-  if (!doctor || doctor?._id.toString() !== patientId) return res.status(400).json({ message: "doctor not found" });
+  if (!doctor || doctor?._id.toString() != patient.doctor) return res.status(400).json({ message: "doctor not found" });
   
 
   res.json(doctor);

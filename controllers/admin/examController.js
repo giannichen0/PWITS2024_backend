@@ -109,6 +109,7 @@ const createNewExam = asyncHandler(async (req, res) => {
 //@route PUT /admin/exam
 //@access Private
 const updateExam = asyncHandler(async (req, res) => {
+    //non posso aggiornare con paziente che differisce dal report. Exam dipende dal report e da lui eredito i campi
     const { id, content, field, patient, doctor, report, completed } = req.body;
     if (!id) return res.status(400).json({ message: "missing ID" });
 
@@ -128,59 +129,113 @@ const updateExam = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "exam not found" });
 
     if (content) exam.content = content;
-    if (field) exam.field = field;
 
-    if (report != null) {
-        if (await checkReport(report)) {
-            exam.report = report;
-        } else {
-            return res
-                .status(400)
-                .json({ message: "The report doesn't exist" });
+    //se report è presente nel req.body
+    if(report){
+        //check se report corrisponde a un report(oggetto)
+        if(await checkReport(report)){
+            //direttamente. Da definizione, il dottore di exa può variare dal dottore di report
+            exam.report = report
+        }else{
+            return res.status(400).json({message : "report not found"})
         }
-    }
-
-    if (patient != null) {
-        if (await checkPatient(patient)) {
-            exam.patient = patient;
-        } else {
-            return res
-                .status(400)
-                .json({ message: "The patient doesn't exist" });
+        //se dottore esiste
+        if(await checkDoctor(doctor)){
+            //direttamente. Da definizione, il dottore di exa può variare dal dottore di report
+            exam.doctor = doctor
+        }else{
+            return res.status(400).json({message : "invalid doctor"})
         }
+        //Se il referto è presente, uso il paziente e il field del report che mi ha passato
+        const reportObj = await Report.findById(report).lean().exec()
+        exam.patient = reportObj.patient
+        exam.field = reportObj.field
+        exam.report = report
+    }else{
+        //se il report non è presente nel req.body vuol dire che sto usando il report corente come base per la modifica dell'esame
+        //aggiorno il field e il paziente di exam e nello stesso tempo aggiorno anche il field e il paziente del report corente
+        //se patient non viene passato, uso il patient di exam
+        if(patient && field){
+            if(await checkPatient(patient)){
+                exam.patient = patient
+                await Report.findByIdAndUpdate(exam.report, { $set: { field: field, patient: patient } }).lean().exec()
+            }else{
+                return res.status(400).json({message : "patient not found"})
+            }
+        }else{
+            if(!patient && field){
+                exam.field = field
+                await Report.findByIdAndUpdate(exam.report, { $set: { field: field} }).lean().exec()
+            }else if(patient && !field){
+                if(await checkPatient(patient)){
+                    exam.patient = patient
+                    await Report.findByIdAndUpdate(exam.report, { $set: { patient: patient } }).lean().exec()
+                }else{
+                    return res.status(400).json({message : "patient not found"})
+                }
+            }
+        }   
     }
-
-    if (doctor != null) {
-        if (await checkDoctor(doctor)) {
-            exam.doctor = doctor;
-        } else {
-            return res
-                .status(400)
-                .json({ message: "The doctor doesn't exist" });
-        }
-    }
-
-    const reportOBJ =
-        report != null ? await Report.findById(report).lean().exec() : exam;
-    if (patient != null) {
-        if (patient.toString() !== reportOBJ.patient.toString())
-            return res.status(404).json({
-                message:
-                    "the patient in the exam must match the patient in the report",
-            });
-    }
-    if (field != null) {
-        if (field.toString() !== reportOBJ.field.toString())
-            return res.status(404).json({
-                message:
-                    "the field in the exam must match the field in the report",
-            });
-    }
-
-    if (completed) exam.completed = completed;
+    if (completed !== undefined) exam.completed = completed;
 
     await exam.save();
+    
     res.status(200).json({ message: "exam updated" });
+
+    // if (patient != null) {
+    //     if (await checkPatient(patient)) {
+    //         exam.patient = patient;
+    //     } else {
+    //         return res
+    //             .status(400)
+    //             .json({ message: "The patient doesn't exist" });
+    //     }
+    // }
+
+    // if (doctor != null) {
+    //     if (await checkDoctor(doctor)) {
+    //         exam.doctor = doctor;
+    //     } else {
+    //         return res
+    //             .status(400)
+    //             .json({ message: "The doctor doesn't exist" });
+    //     }
+    // }
+
+    // const reportOBJ = report != null ? await Report.findById(report).lean().exec() : await Report.findById(exam.report).lean().exec;
+    // if (patient != null) {
+    //     if (patient.toString() !== reportOBJ.patient.toString())
+    //         return res.status(404).json({message:"the patient in the exam must match the patient in the report"});
+    //     else
+    //         await Report.updateMany({patient : exam.patient},{ $set: { patient: patient }})
+    // }
+    // if (field != null) {
+    //     if (field.toString() != reportOBJ.field.toString()) {
+    //         return res.status(404).json({
+    //             message: "the field in the exam must match the field in the report",
+    //         });
+    //     } else {
+    //         exam.field = field;
+    //         await Report.updateMany({ report: exam.report }, { $set: { field: field } });
+    //     }
+    // }
+
+    // if (report != null) {
+    //     if (await checkReport(report)) {
+    //         exam.report = report;
+    //         //await Report.findByIdAndUpdate(report,{patient : reportOBJ.pat})
+    //     } else {
+    //         return res
+    //             .status(400)
+    //             .json({ message: "The report doesn't exist" });
+    //     }
+    // }
+    
+
+    // if (completed) exam.completed = completed;
+
+    // await exam.save();
+    // res.status(200).json({ message: "exam updated" });
 });
 
 //@desc delete a exam

@@ -90,7 +90,7 @@ const deleteDoctor = asyncHandler(async (req, res) => {
   if (patients?.length) {
     for (const patient of patients) {
       // Delete all exams associated with the patient
-      // await Exam.deleteMany({ patient: patient._id }).exec();
+      await Exam.deleteMany({ patient: patient._id }).exec();
       // Delete all reports associated with the patient
       await Report.deleteMany({ patient: patient._id }).exec();
       // Delete the patient

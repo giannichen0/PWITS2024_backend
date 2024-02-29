@@ -44,7 +44,13 @@ const updateDoctor = asyncHandler(async (req, res) => {
     const hashedPwd = await bcrypt.hash(password, 10);
     doctor.password = hashedPwd;
   }
-  if (email) doctor.email = email;
+  if (email){
+    const duplicate = await Patient.findOne({ email }).lean().exec();
+    if (duplicate) {
+        return res.status(409).json({ message: "duplicate email" });
+    }
+    doctor.email = email;
+  } 
   if (telefono) doctor.telefono = telefono;
 
   

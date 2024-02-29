@@ -5,7 +5,7 @@ const Exam = require("../../models/Exam");
 const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler");
 const nodemailer = require("nodemailer");
-
+const puppeteer = require("puppeteer")
 const path = require("path");
 
 const fsPromises = require("fs").promises;
@@ -58,7 +58,7 @@ const emailSender = asyncHandler(async (req, res) => {
     if (!exam.completed && timeDifferenceMs > 60 * 24 * 1000) {
         const doctorExam = await Doctor.findById(examObj.doctor).lean().exec();
         const email = patientObj.email;
-        
+
         const replacements = {
             "{{data}}": new Date().toLocaleDateString("it-IT", {
                 day: "2-digit",
@@ -81,7 +81,7 @@ const emailSender = asyncHandler(async (req, res) => {
                 year: "numeric",
             }),
         };
-    
+
         const htmlTemplate = await fsPromises.readFile(
             path.join(__dirname, "..", "..", "template", "email.html"),
             "utf-8"
@@ -174,7 +174,20 @@ const pdfGenerator = asyncHandler(async (req, res) => {
         (html, [placeholder, value]) => html.replace(placeholder, value),
         htmlTemplate
     );
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
-   
+    // Set HTML content on the page
+    await page.setContent(htmlContent);
+
+    // Generate PDF
+    const buffer = await page.pdf({ format: "A4", printBackground: true});
+
+    // Close the browser
+    await browser.close();
+
+    // Stream PDF buffer back to the client
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(buffer);
 });
 module.exports = { emailSender, pdfGenerator };

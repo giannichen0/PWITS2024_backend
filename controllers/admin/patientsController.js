@@ -44,11 +44,13 @@ const createNewPatient = asyncHandler(async (req, res) => {
     }
 
     if (!(await checkDoctor(doctor))) {
-        return res
-            .status(400)
-            .json({
-                message: "the doctor associated to the patient is not defined",
-            });
+        return res.status(400).json({
+            message: "the doctor associated to the patient is not defined",
+        });
+    }
+    const duplicate = await Patient.findOne({ email }).lean().exec();
+    if (duplicate) {
+        return res.status(409).json({ message: "duplicate email" });
     }
 
     const patientObject = {
@@ -90,7 +92,13 @@ const updatePatient = asyncHandler(async (req, res) => {
         const hashedPwd = await bcrypt.hash(password, 10);
         patient.password = hashedPwd;
     }
-    if (email) patient.email = email;
+    if (email) {
+        const duplicate = await Patient.findOne({ email }).lean().exec();
+        if (duplicate) {
+            return res.status(409).json({ message: "duplicate email" });
+        }
+        patient.email = email;
+    }
     if (telefono) patient.telefono = telefono;
 
     if (doctor != null && !checkId(doctor)) {

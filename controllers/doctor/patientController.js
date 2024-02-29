@@ -42,11 +42,13 @@ const createNewPatient = asyncHandler(async (req, res) => {
     }
 
     if (!(await checkDoctor(doctor))) {
-        return res
-            .status(400)
-            .json({
-                message: "the doctor associated to the patient is not defined",
-            });
+        return res.status(400).json({
+            message: "the doctor associated to the patient is not defined",
+        });
+    }
+    const duplicate = await Patient.findOne({ email }).lean().exec();
+    if (duplicate) {
+        return res.status(409).json({ message: "duplicate email" });
     }
 
     const patientObject = {
@@ -90,9 +92,14 @@ const updatePatient = asyncHandler(async (req, res) => {
         const hashedPwd = await bcrypt.hash(password, 10);
         patient.password = hashedPwd;
     }
-    if (email) patient.email = email;
+    if (email) {
+        const duplicate = await Patient.findOne({ email }).lean().exec();
+        if (duplicate) {
+            return res.status(409).json({ message: "duplicate email" });
+        }
+        patient.email = email;
+    }
     if (telefono) patient.telefono = telefono;
-
 
     if (doctor != null && !checkId(doctor)) {
         return res.status(400).json({ message: "doctor is not valid" });
@@ -114,7 +121,7 @@ const updatePatient = asyncHandler(async (req, res) => {
 
 const deletePatient = asyncHandler(async (req, res) => {
     const { id } = req.body;
-    const doctorId =await jwtDecoder(req,res)
+    const doctorId = await jwtDecoder(req, res);
     if (!id) return res.status(400).json({ message: "Missing ID" });
     if (!checkId(id)) {
         return res.status(400).json({ message: "ID is not valid" });
@@ -122,7 +129,13 @@ const deletePatient = asyncHandler(async (req, res) => {
 
     const patient = await Patient.findById(id).exec();
     if (!patient) return res.status(404).json({ message: "Patient non found" });
-    if(patient.doctor != doctorId) return res.status(404).json({message : "the patient doctor is different than the logged doctor"})
+    if (patient.doctor != doctorId)
+        return res
+            .status(404)
+            .json({
+                message:
+                    "the patient doctor is different than the logged doctor",
+            });
     await Exam.deleteMany({ patient: patient._id }).exec();
 
     // Delete all reports associated with the patient
@@ -136,4 +149,9 @@ const deletePatient = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = { getPatients, createNewPatient, updatePatient, deletePatient };
+module.exports = {
+    getPatients,
+    createNewPatient,
+    updatePatient,
+    deletePatient,
+};

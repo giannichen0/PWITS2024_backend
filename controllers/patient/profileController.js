@@ -46,11 +46,17 @@ const updatePatient = asyncHandler(async (req, res) => {
         const hashedPwd = await bcrypt.hash(password, 10);
         doctor.password = hashedPwd;
     }
-    if (email) patient.email = email;
+    if (email) {
+        const duplicate = await Patient.findOne({ email }).lean().exec();
+        if (duplicate) {
+            return res.status(409).json({ message: "duplicate email" });
+        }
+        patient.email = email;
+    }
     if (telefono) patient.telefono = telefono;
 
     await patient.save();
     res.status(200).json({ message: "patient updated" });
 });
 
-module.exports = { getPatientProfile, updatePatient};
+module.exports = { getPatientProfile, updatePatient };

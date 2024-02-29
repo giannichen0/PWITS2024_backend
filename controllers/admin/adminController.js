@@ -15,6 +15,11 @@ const createNewAdmin = asyncHandler(async (req, res) => {
     if (!name || !surname || !password || !email || !telefono) {
       return res.status(400).json({ message: "All fields are required" });
     }
+
+    const duplicate = await Admin.findOne({ email }).lean().exec();
+    if (duplicate) {
+        return res.status(409).json({ message: "duplicate email" });
+    }
     
     const hashedPwd = await bcrypt.hash(password, 10);
     const adminObj = { name, surname, password: hashedPwd, email, telefono };

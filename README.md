@@ -42,6 +42,8 @@ Se elimino un Patient, elimino tutti gli Exam e Report che hanno un vincolo con 
 Se elimino un Report, elimino tutti gli Exam che hanno come soggetto quel Report
 
 ## Endpoints
+L'applicazione usa JWT per l'autenticazione e per le autorizzazioni
+
 /doctor e /patient usano l'access token per prendere l'id dell'utente loggato
 
 Tutte le rotte implementano le logiche descritte in mongoDb Schemas

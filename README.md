@@ -1,7 +1,7 @@
 # Parte backend del project work ITS Ferrara 2024 by Gianni Chen
 
 ## Installation:
-1. __npm install__
+1. __git clone https://github.com/giannichen0/PWITS2024_backend__
 2. __crea un .env file con i tuoi dati__
 3. __npm start__ o __npm run dev__ se vuoi lanciarlo in development 
 

@@ -1,15 +1,20 @@
 # Parte backend del project work ITS Ferrara 2024 by Gianni Chen
 
 ## Installation:
-1. __npm install__
-2. __crea un .env file con i tuoi dati__
-3. __npm start__ o __npm run dev__ se vuoi lanciarlo in development 
+1. __git clone https://github.com/giannichen0/PWITS2024_backend.git__
+2. __cd PWITS2024_backend__
+3. __crea un .env file con i tuoi dati__
+4. __docker build -t pwits2024_by_Gianni_Chen .__
+5. __docker run -d -p 8080:8080 pwits2024_by_Gianni_Chen__ 
 
 ## .env file requirements:
 - MONGO_DB_URI: la tua connection string di mongoDb
 - ACCESS_TOKEN_SECRET: il tuo access_token_secret
 - REFRESH_TOKEN_SECRET: il tuo refresh_token_secret
 - APP_PASSWORD_GIANNICHEN: il tuo gmail app password oppure altro email provider password
+- NODE_ENV: inserisci "production" se sei in production, se no non aggiungere questa variabile
+- PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: trovi nel Dockerfile
+- PUPPETEER_EXECUTABLE_PATH: trovi nel Dockerfile
 
 ## Gmail
 Se vuoi usare Gmail devi andare in impostazioni del tuo account -> sicurezza. Qua accertati che hai il 2FA attivato e generare una app password
@@ -37,6 +42,8 @@ Se elimino un Patient, elimino tutti gli Exam e Report che hanno un vincolo con 
 Se elimino un Report, elimino tutti gli Exam che hanno come soggetto quel Report
 
 ## Endpoints
+L'applicazione usa JWT per l'autenticazione e per le autorizzazioni
+
 /doctor e /patient usano l'access token per prendere l'id dell'utente loggato
 
 Tutte le rotte implementano le logiche descritte in mongoDb Schemas

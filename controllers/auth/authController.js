@@ -66,7 +66,7 @@ const login = asyncHandler(async (req, res) => {
     //setto un httpOnly cookie
     res.cookie("jwt", refreshToken, {
         httpOnly: true,
-        //secure: true,
+        secure: process.env.NODE_ENV === "production" ? true : false,
         sameSite: "none",
         maxAge: 5 * 24 * 60 * 60 * 1000,
     });

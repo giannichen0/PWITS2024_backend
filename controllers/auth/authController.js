@@ -71,7 +71,7 @@ const login = asyncHandler(async (req, res) => {
         maxAge: 5 * 24 * 60 * 60 * 1000,
     });
     //rimando indietro l'access token e il cookie
-    res.json({ accessToken });
+    res.json({accessToken : accessToken, role : role });
 });
 
 //@desc GET refresh
@@ -124,7 +124,7 @@ const refresh = (req, res) => {
                 { expiresIn: "1h" }
             );
 
-            res.json({ accessToken });
+            res.json({ accessToken : accessToken, role : role});
         })
     );
 };

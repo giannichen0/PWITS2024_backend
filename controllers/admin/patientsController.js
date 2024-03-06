@@ -10,7 +10,7 @@ const { checkDoctor, checkId } = require("../../helper/checker");
 //@route GET /admin/patients
 //@access Private
 const getAllPatients = asyncHandler(async (req, res) => {
-    const patients = await Patient.find().lean();
+    const patients = await Patient.find().select("-password -__v").lean();
     if (!patients?.length) {
         return res.status(404).json({ message: "No patients found" });
     }

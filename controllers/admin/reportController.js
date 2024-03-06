@@ -9,7 +9,7 @@ const Exam = require("../../models/Exam");
 //@route GET /admin/reports
 //@access Private
 const getAllReports = asyncHandler(async (req, res) => {
-  const reports = await Report.find().lean();
+  const reports = await Report.find().select("-report -__v -updatedAt").lean();
   if (!reports?.length) {
     return res.status(404).json({ message: "No report found" });
   }

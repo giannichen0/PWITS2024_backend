@@ -15,7 +15,7 @@ const {
 //@route GET /admin/exams
 //@access Private
 const getAllExams = asyncHandler(async (req, res) => {
-    const exams = await Exam.find().lean();
+    const exams = await Exam.find().select("-exam -__v -updatedAt").lean();
     if (!exams?.length) {
         return res.status(404).json({ message: "No exams found" });
     }

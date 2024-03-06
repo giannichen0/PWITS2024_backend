@@ -102,11 +102,10 @@ const updateReport = asyncHandler(async (req, res) => {
   }
 
   const patientDoctor = patient != null ? await Patient.findById(patient).lean().exec() : report;
-  if (doctor != null) {
-    if (doctor.toString() !== patientDoctor.doctor.toString())
-      return res.status(400).json({
-        message: "the doctor on the report must match the patient's doctor",
-      });
+  if (doctor != null && doctor.toString() !== patientDoctor.doctor.toString()) {
+    return res.status(400).json({
+      message: "the doctor on the report must match the patient's doctor",
+    });
   }
 
   if (doctor != null) {

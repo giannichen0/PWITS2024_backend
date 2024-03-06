@@ -47,7 +47,6 @@ const emailSender = asyncHandler(async (req, res) => {
     if (!examObj) return res.status(400).json({ message: "exam not found" });
 
     if (
-        doctorObj._id.toString() !== patientObj.doctor.toString() ||
         patientObj._id.toString() !== examObj.patient.toString()
     )
         return res

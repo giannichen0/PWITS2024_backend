@@ -54,8 +54,18 @@ const emailSender = asyncHandler(async (req, res) => {
             .status(400)
             .json({ message: "the doctor must be the same patient's doctor" });
 
-    const timeDifferenceMs = Date.now() - examObj.createdAt.getTime();
-    if (!exam.completed && timeDifferenceMs > 60 * 24 * 1000) {
+    // const timeDifferenceMs = Date.now() - examObj.createdAt.getTime();
+    // if (!exam.completed && timeDifferenceMs > 60 * 24 * 1000) 
+    
+    const createdAtDate = new Date(examObj.createdAt);
+    const currentDate = new Date();
+    const differenceInDays = Math.floor(
+        (currentDate - createdAtDate) / (1000 * 60 * 60
+           // *24 differenza in ore cosi.
+            )
+    );
+    if(differenceInDays > 5)
+    {
         const doctorExam = await Doctor.findById(examObj.doctor).lean().exec();
         const email = patientObj.email;
 

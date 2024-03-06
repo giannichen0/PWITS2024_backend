@@ -6,5 +6,7 @@ const {isAdminOrDoctor} = require("../middleware/verifyRole")
 
 
 router.post("/mail",[verifyJWT,isAdminOrDoctor], utilityController.emailSender);
-router.get("/pdf", utilityController.pdfGenerator);
+
+//scommentare dopo presentazione
+//router.get("/pdf", utilityController.pdfGenerator);
 module.exports = router;

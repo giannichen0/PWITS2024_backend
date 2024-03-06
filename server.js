@@ -18,9 +18,6 @@ const PORT = process.env.PORT || 8080;
 
 connectDB();
 
-//bruttissimo ma il progetto lo vuole cosi. Accessibile a chiunque, senza jwt e controllo sul ruolo
-const {pdfGenerator} = require("./controllers/utility/utilityController")
-app.get("/utility/pdf", pdfGenerator)
 
 //log eventi server
 app.use(logger);

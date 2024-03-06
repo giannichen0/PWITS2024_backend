@@ -142,7 +142,7 @@ const emailSender = asyncHandler(async (req, res) => {
 //@route PUT /utility/pdf
 //@access Private
 const pdfGenerator = asyncHandler(async (req, res) => {
-    const {doctorId, patientId, examId, reportId} = req.query
+    const {doctorId, patientId, examId, reportId} = req.body
     // const doctorId = "65d7b5220cb368577b692517";
     // const patientId = "65d7a960ea4fca27e3b32243";
     // const examId = "65da347cf238aa23b6b77fee";

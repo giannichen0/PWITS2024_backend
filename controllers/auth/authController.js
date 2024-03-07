@@ -54,13 +54,13 @@ const login = asyncHandler(async (req, res) => {
         },
 
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "10min" }
     );
 
     const refreshToken = jwt.sign(
         {user:{ name: foundUser.name, email: foundUser.email, id: foundUser._id, role: foundUser.role }},
         process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "5days" }
+        { expiresIn: "1days" }
     );
 
     //setto un httpOnly cookie
@@ -68,13 +68,13 @@ const login = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production" ? true : false,
         sameSite: "none",
-        maxAge: 5 * 24 * 60 * 60 * 1000,
+        maxAge: 1 * 24 * 60 * 60 * 1000,
     });
     res.cookie("role", role, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production" ? true : false,
         sameSite: "none",
-        maxAge: 5 * 24 * 60 * 60 * 1000,
+        maxAge: 1 * 24 * 60 * 60 * 1000,
     });
     //rimando indietro l'access token e il cookie
     res.json({accessToken : accessToken, role : role });
@@ -85,7 +85,6 @@ const login = asyncHandler(async (req, res) => {
 //@access Public
 const refresh = (req, res) => {
     const cookies = req.cookies;
-    console.log(cookies)
     if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
     const refreshToken = cookies.jwt;
     const role = cookies.role
@@ -97,8 +96,6 @@ const refresh = (req, res) => {
         asyncHandler(async (err, decoded) => {
             
             if (err) return res.status(403).json({ message: "forbidden" });
-
-            console.log(decoded)
             
             const accessToken = jwt.sign(
                 {
@@ -110,7 +107,7 @@ const refresh = (req, res) => {
                     },
                 },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: "1h" }
+                { expiresIn: "10min" }
             );
 
             res.json({ accessToken : accessToken, role : role});

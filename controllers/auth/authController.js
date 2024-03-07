@@ -70,6 +70,12 @@ const login = asyncHandler(async (req, res) => {
         sameSite: "none",
         maxAge: 5 * 24 * 60 * 60 * 1000,
     });
+    res.cookie("role", role, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production" ? true : false,
+        sameSite: "none",
+        maxAge: 5 * 24 * 60 * 60 * 1000,
+    });
     //rimando indietro l'access token e il cookie
     res.json({accessToken : accessToken, role : role });
 });
@@ -79,9 +85,10 @@ const login = asyncHandler(async (req, res) => {
 //@access Public
 const refresh = (req, res) => {
     const cookies = req.cookies;
-
+    console.log(cookies)
     if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
     const refreshToken = cookies.jwt;
+    const role = cookies.role
 
     //verifica
     jwt.verify(
@@ -90,34 +97,16 @@ const refresh = (req, res) => {
         asyncHandler(async (err, decoded) => {
             
             if (err) return res.status(403).json({ message: "forbidden" });
-            //let role;
-            //console.log(decoded)
-            //let foundUser = await Admin.findById(decoded._id).lean().exec();
-            // if (foundUser) {
-            //     role = "admin";
-            // } else {
-            //     foundUser = await Doctor.findById(decoded._id).lean().exec();
-            //     if (foundUser + "doc") {
-            //         role = "doctor";
-            //     } else {
-            //         foundUser = await Patient.findById(decoded._id).lean().exec();
-            //         if (foundUser) {
-            //             role = "patient";
-            //         } else {
-            //             role = null;
-            //             res.status(401).json({
-            //                 message: "unauthorized, No User",
-            //             });
-            //         }
-            //     }
-            // }
+
+            console.log(decoded)
+            
             const accessToken = jwt.sign(
                 {
                     user: {
-                        name: decoded.name,
-                        email: decoded.email,
-                        id: decoded._id,
-                        role: decoded._id
+                        name: decoded.user.name,
+                        email: decoded.user.email,
+                        id: decoded.user.id,
+                        role:role
                     },
                 },
                 process.env.ACCESS_TOKEN_SECRET,

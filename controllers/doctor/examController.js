@@ -17,7 +17,7 @@ const {
 //@access Private
 const getExams = asyncHandler(async (req, res) => {
     const doctorId = await jwtDecoder(req, res);
-    const exams = await Exam.find({ doctor: doctorId }).lean();
+    const exams = await Exam.find({ doctor: doctorId }).select("-exam -__v -updatedAt").lean();
     if (!exams?.length) {
         return res
             .status(200)
@@ -45,8 +45,9 @@ const getExams = asyncHandler(async (req, res) => {
 //@route POST /doctor/exam
 //@access Private
 const createNewExam = asyncHandler(async (req, res) => {
-    const { content, field, patient, report, completed } = req.body;
-    const doctor = await jwtDecoder(req, res);
+    const { content, field, patient, report, completed, doctor } = req.body;
+    
+
     if (!content || !field || !patient || !doctor || !report) {
         return res
             .status(400)

@@ -110,8 +110,8 @@ const emailSender = asyncHandler(async (req, res) => {
             transport.sendMail(
                 {
                     from: "chengianni38@gmail.com",
-                    //to : email,
-                    to: "gianni.chen@fitstic-edu.com",
+                    to : email,
+                    //to: "gianni.chen@fitstic-edu.com",
                     html: htmlContent,
                     subject: "Solecitazione Esame " + examObj._id,
                 },

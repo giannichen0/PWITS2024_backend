@@ -6,9 +6,12 @@ const patientsController = require("../controllers/admin/patientsController");
 const examsController = require("../controllers/admin/examController");
 const reportController = require("../controllers/admin/reportController");
 const verifyJWT = require("../middleware/verifyJWT");
-const { isAdmin } = require("../middleware/verifyRole");
+const { isAdmin, isAdminOrDoctor } = require("../middleware/verifyRole");
+
+
 
 router.use(verifyJWT);
+router.get("/doctors", isAdminOrDoctor, doctorsContoller.getAllDoctors )
 router.use(isAdmin);
 
 router
@@ -18,7 +21,6 @@ router
 
 router
     .route("/doctors")
-    .get(doctorsContoller.getAllDoctors)
     .post(doctorsContoller.createNewDoctor)
     .put(doctorsContoller.updateDoctor)
     .delete(doctorsContoller.deleteDoctor);

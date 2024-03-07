@@ -11,7 +11,7 @@ const jwtDecoder = require("../../helper/jwtDecoder");
 //@access Private
 const getReports = asyncHandler(async (req, res) => {
     const doctorId = await jwtDecoder(req, res);
-    const reports = await Report.find({ doctor: doctorId }).lean();
+    const reports = await Report.find({ doctor: doctorId }).select("-report -__v -updatedAt").lean();
     if (!reports?.length) {
         return res.status(200).json({ message: "the doctor have no reports" });
     }

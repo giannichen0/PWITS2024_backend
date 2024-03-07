@@ -13,7 +13,7 @@ router.use(isDoctor);
 router
     .route("/profile")
     .get(profileController.getDoctorProfile)
-    .post(profileController.updateDoctor);
+    .put(profileController.updateDoctor);
 
 router
     .route("/patients")
@@ -25,7 +25,7 @@ router
     .route("/reports")
     .get(reportController.getReports)
     .post(reportController.createNewReport)
-    .put(reportController.createNewReport)
+    .put(reportController.updateReport)
     .delete(reportController.deleteReport);
 
 router

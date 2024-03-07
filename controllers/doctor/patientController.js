@@ -3,6 +3,9 @@ const bcrypt = require("bcrypt"); //hash password
 const asyncHandler = require("express-async-handler");
 const { checkId, checkDoctor } = require("../../helper/checker");
 const Patient = require("../../models/Patient");
+const Exam = require("../../models/Exam")
+const Report = require("../../models/Report")
+
 const jwtDecoder = require("../../helper/jwtDecoder");
 
 //@desc GET all patient with doctor = doctorId
@@ -14,11 +17,11 @@ const getPatients = asyncHandler(async (req, res) => {
     if (!checkId(doctorID))
         return res.status(400).json({ message: "invalid id" });
 
-    const doctor = await Doctor.findById(doctorID).lean().exec();
+    const doctor = await Doctor.findById(doctorID).select("-password -__v").lean().exec();
     if (!doctor || doctor?._id.toString() !== doctorID)
         return res.status(400).json({ message: "doctor not found" });
 
-    const patients = await Patient.find({ doctor: doctor._id }).lean().exec();
+    const patients = await Patient.find({ doctor: doctor._id }).select("-password -__v").lean().exec();
     if (!patients?.length)
         return res.status(200).json({ message: "the doctor has no patients" });
     res.json(patients);
@@ -136,11 +139,16 @@ const deletePatient = asyncHandler(async (req, res) => {
                 message:
                     "the patient doctor is different than the logged doctor",
             });
-    await Exam.deleteMany({ patient: patient._id }).exec();
+    
+    const patientExams = await Exam.find({ patient: patient._id }).exec();
 
     // Delete all reports associated with the patient
-    await Report.deleteMany({ patient: patient._id }).exec();
-
+    const patientReport = await Report.find({ patient: patient._id }).exec();
+    
+    if(patientExams.length !== 0 || patientReport.length !== 0){
+        await Exam.deleteMany({ patient: patient._id }).exec();
+        await Report.deleteMany({ patient: patient._id }).exec()
+    }
     //aggiungi referenza al dottore deleted
     const result = await patient.deleteOne();
     const reply = `patient and associated data deleted successfully`;

@@ -23,18 +23,22 @@ const getAllExams = asyncHandler(async (req, res) => {
     //map del exam con il nome del dottore, del  paziente e del report
     const examWithDoctorPatientReport = await Promise.all(
         exams.map(async (exam) => {
-            const doctor = await Doctor.findById(exam.doctor).lean().exec();
-            const patient = await Patient.findById(exam.patient).lean().exec();
+            const doctor = exam.doctor ? await Doctor.findById(exam.doctor).lean().exec() : null;
+            const patient = exam.patient ? await Patient.findById(exam.patient).lean().exec() : null;
             const report = await Report.findById(exam.report).lean().exec();
+    
+            const doctorName = doctor ? `${doctor.name} ${doctor.surname} id: ${doctor._id}` : 'Unknown Doctor';
+            const patientName = patient ? `${patient.name} ${patient.surname} id: ${patient._id}` : 'Unknown Patient';
+    
             return {
                 ...exam,
-                doctor: `${doctor.name} ${doctor.surname} id: ${doctor._id}`,
-                patient: `${patient.name} ${patient.surname} id: ${patient._id}`,
-                report: `${report.content} id: ${report._id}`,
+                doctor: doctorName,
+                patient: patientName,
+                report: `${report?.content || 'No report content'} id: ${report?._id || 'No report ID'}`,
             };
         })
     );
-    res.json(examWithDoctorPatientReport);
+    res.json(examWithDoctorPatientReport)
 });
 
 //@desc Create a new exam

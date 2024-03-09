@@ -25,11 +25,11 @@ const getAllExams = asyncHandler(async (req, res) => {
     const examWithDoctorPatientReport = await Promise.all(
         exams.map(async (exam) => {
             const doctor = await Doctor.findById(exam.doctor).lean().exec();
-            console.log(doctor)
+          
             const patient = await Patient.findById(exam.patient).lean().exec();
-            console.log(patient)
+            
             const report = await Report.findById(exam.report).lean().exec();
-            console.log(report)
+            
             return {
                 ...exam,
                 doctor: `${doctor.name} ${doctor.surname} id: ${doctor._id}`,

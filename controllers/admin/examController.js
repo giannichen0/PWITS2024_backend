@@ -19,26 +19,26 @@ const getAllExams = asyncHandler(async (req, res) => {
     if (!exams?.length) {
         return res.status(404).json({ message: "No exams found" });
     }
+    
 
     //map del exam con il nome del dottore, del  paziente e del report
     const examWithDoctorPatientReport = await Promise.all(
         exams.map(async (exam) => {
-            const doctor = exam.doctor ? await Doctor.findById(exam.doctor).lean().exec() : null;
-            const patient = exam.patient ? await Patient.findById(exam.patient).lean().exec() : null;
+            const doctor = await Doctor.findById(exam.doctor).lean().exec();
+            console.log(doctor)
+            const patient = await Patient.findById(exam.patient).lean().exec();
+            console.log(patient)
             const report = await Report.findById(exam.report).lean().exec();
-    
-            const doctorName = doctor ? `${doctor.name} ${doctor.surname} id: ${doctor._id}` : 'Unknown Doctor';
-            const patientName = patient ? `${patient.name} ${patient.surname} id: ${patient._id}` : 'Unknown Patient';
-    
+            console.log(report)
             return {
                 ...exam,
-                doctor: doctorName,
-                patient: patientName,
-                report: `${report?.content || 'No report content'} id: ${report?._id || 'No report ID'}`,
+                doctor: `${doctor.name} ${doctor.surname} id: ${doctor._id}`,
+                patient: `${patient.name} ${patient.surname} id: ${patient._id}`,
+                report: `${report.content} id: ${report._id}`,
             };
         })
     );
-    res.json(examWithDoctorPatientReport)
+    res.json(examWithDoctorPatientReport);
 });
 
 //@desc Create a new exam

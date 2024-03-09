@@ -4,6 +4,7 @@ const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler"); //async functionality, cosi posso a fare a meno del promise chaining o try/catch block
 const bcrypt = require("bcrypt"); //hash password
 const { checkId } = require("../../helper/checker");
+const Exam = require("../../models/Exam")
 
 //@desc GET all doctors
 //@route GET /admin/doctors
@@ -102,7 +103,7 @@ const deleteDoctor = asyncHandler(async (req, res) => {
     if (patients?.length) {
         for (const patient of patients) {
             // Delete all exams associated with the patient
-            //await Exam.deleteMany({ patient: patient._id }).exec();
+            await Exam.deleteMany({ patient: patient._id }).exec();
             // Delete all reports associated with the patient
             await Report.deleteMany({ patient: patient._id }).exec();
             // Delete the patient

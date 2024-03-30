@@ -33,4 +33,13 @@ const isAdminOrDoctor = (req, res, next) => {
 
     next();
 };
-module.exports = { isAdmin, isDoctor, isPatient, isAdminOrDoctor };
+
+const isAdminOrDoctorOrPatient = (req, res, next) => {
+    if (req.role !== "doctor" && req.role !== "admin" && req.role !== "patient")
+        return res
+            .status(403)
+            .json({ message: "Forbidden. Doctor or admin acess required " });
+
+    next();
+};
+module.exports = { isAdmin, isDoctor, isPatient, isAdminOrDoctor, isAdminOrDoctorOrPatient };

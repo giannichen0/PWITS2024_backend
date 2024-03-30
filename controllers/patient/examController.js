@@ -12,7 +12,7 @@ const jwtDecoder = require("../../helper/jwtDecoder");
 //@access Private
 const getExams = asyncHandler(async (req, res) => {
     const patientId = await jwtDecoder(req, res); 
-    const exams = await Exam.find({ patient: patientId }).lean();
+    const exams = await Exam.find({ patient: patientId }).select("-exam -__v -updatedAt").lean();
     if (!exams?.length) {
         return res
             .status(200)

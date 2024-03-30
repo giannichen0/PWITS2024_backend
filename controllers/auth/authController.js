@@ -107,7 +107,7 @@ const refresh = (req, res) => {
                     },
                 },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: "10min" }
+                { expiresIn: "10m" }
             );
 
             res.json({ accessToken : accessToken, role : role});

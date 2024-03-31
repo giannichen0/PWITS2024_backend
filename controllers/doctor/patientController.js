@@ -1,8 +1,9 @@
 const Doctor = require("../../models/Doctor");
+const Admin = require("../../models/Admin")
+const Patient = require("../../models/Patient");
 const bcrypt = require("bcrypt"); //hash password
 const asyncHandler = require("express-async-handler");
 const { checkId, checkDoctor } = require("../../helper/checker");
-const Patient = require("../../models/Patient");
 const Exam = require("../../models/Exam");
 const Report = require("../../models/Report");
 

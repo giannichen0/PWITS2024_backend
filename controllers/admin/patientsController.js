@@ -12,7 +12,7 @@ const { checkDoctor, checkId } = require("../../helper/checker");
 const getAllPatients = asyncHandler(async (req, res) => {
     const patients = await Patient.find().select("-password -__v").lean();
     if (!patients?.length) {
-        return res.status(404).json({ message: "No patients found" });
+        return res.status(404).json({ message: "Nessun paziente trovato" });
     }
 
     //map del paziente con il nome del dottore
@@ -34,23 +34,26 @@ const getAllPatients = asyncHandler(async (req, res) => {
 const createNewPatient = asyncHandler(async (req, res) => {
     const { name, surname, password, email, telefono, doctor } = req.body;
     if (!name || !surname || !password || !email || !telefono || !doctor) {
-        return res.status(400).json({ message: "All fields are required" });
+        return res.status(400).json({ message: "Tutti i campi sono richiesti" });
     }
 
     const hashedPwd = await bcrypt.hash(password, 10);
 
     if (!checkId(doctor)) {
-        return res.status(400).json({ message: "doctor is not valid" });
+        return res.status(400).json({ message: "Dottore non valido" });
     }
 
     if (!(await checkDoctor(doctor))) {
         return res.status(400).json({
-            message: "the doctor associated to the patient is not defined",
+            message: "Il dottore associato al paziente non è valido",
         });
     }
-    const duplicate = await Patient.findOne({ email }).lean().exec();
-    if (duplicate) {
-        return res.status(409).json({ message: "duplicate email" });
+    const adminDuplicate = await Admin.findOne({ email }).lean().exec();
+    const patientDuplicate = await Patient.findOne({ email }).lean().exec();
+    const doctorDuplicate = await Doctor.findOne({ email }).lean().exec();
+
+    if (adminDuplicate || patientDuplicate || doctorDuplicate) {
+        return res.status(409).json({ message: "Email già registrata" });
     }
 
     const patientObject = {
@@ -63,9 +66,9 @@ const createNewPatient = asyncHandler(async (req, res) => {
     };
     const patient = await Patient.create(patientObject);
     if (patient) {
-        res.status(201).json({ message: `new patient ${name} created` });
+        res.status(201).json({ message: `Nuovo paziente ${name} registrato` });
     } else {
-        res.status(400).json({ message: "Invalid patient data " });
+        res.status(400).json({ message: "Dati del paziente non validi" });
     }
 });
 
@@ -75,16 +78,16 @@ const createNewPatient = asyncHandler(async (req, res) => {
 const updatePatient = asyncHandler(async (req, res) => {
     const { id, name, surname, password, email, telefono, doctor } = req.body;
     if (!id) {
-        return res.status(400).json({ message: "missing ID" });
+        return res.status(400).json({ message: "Id mancante" });
     }
     if (!checkId(id)) {
-        return res.status(400).json({ message: "ID is not valid" });
+        return res.status(400).json({ message: "Id non valido" });
     }
     //no .lean() perchè vogliamo un moongose document object e non un pojo
     const patient = await Patient.findById(id).exec();
 
     if (!patient || patient?._id.toString() !== id) {
-        return res.status(404).json({ message: "patient not found" });
+        return res.status(404).json({ message: "Paziente non trovato" });
     }
     if (name) patient.name = name;
     if (surname) patient.surname = surname;
@@ -93,16 +96,19 @@ const updatePatient = asyncHandler(async (req, res) => {
         patient.password = hashedPwd;
     }
     if (email) {
-        const duplicate = await Patient.findOne({ email }).lean().exec();
-        if (duplicate) {
-            return res.status(409).json({ message: "duplicate email" });
+        const adminDuplicate = await Admin.findOne({ email }).lean().exec();
+        const patientDuplicate = await Patient.findOne({ email }).lean().exec();
+        const doctorDuplicate = await Doctor.findOne({ email }).lean().exec();
+
+        if (adminDuplicate || patientDuplicate || doctorDuplicate) {
+            return res.status(409).json({ message: "Email già registrata" });
         }
         patient.email = email;
     }
     if (telefono) patient.telefono = telefono;
 
     if (doctor != null && !checkId(doctor)) {
-        return res.status(400).json({ message: "doctor is not valid" });
+        return res.status(400).json({ message: "Dottore non valido" });
     }
     if (doctor != null) {
         if (await checkDoctor(doctor)) {
@@ -110,12 +116,12 @@ const updatePatient = asyncHandler(async (req, res) => {
         } else {
             return res
                 .status(400)
-                .json({ message: "The doctor doesn't exist" });
+                .json({ message: "Il dottore non esiste" });
         }
     }
 
     await patient.save();
-    res.status(200).json({ message: "patient updated" });
+    res.status(200).json({ message: "Paziente aggiornato" });
 });
 
 //@desc delete a patient
@@ -123,13 +129,13 @@ const updatePatient = asyncHandler(async (req, res) => {
 //@access Private
 const deletePatient = asyncHandler(async (req, res) => {
     const { id } = req.body;
-    if (!id) return res.status(400).json({ message: "Missing ID" });
+    if (!id) return res.status(400).json({ message: "Id mancante" });
     if (!checkId(id)) {
-        return res.status(400).json({ message: "ID is not valid" });
+        return res.status(400).json({ message: "Id non valido" });
     }
 
     const patient = await Patient.findById(id).exec();
-    if (!patient) return res.status(404).json({ message: "Patient non found" });
+    if (!patient) return res.status(404).json({ message: "Paziente non trovato" });
 
     await Exam.deleteMany({ patient: patient._id }).exec();
 
@@ -138,7 +144,7 @@ const deletePatient = asyncHandler(async (req, res) => {
 
     //aggiungi referenza al dottore deleted
     const result = await patient.deleteOne();
-    const reply = `patient and associated data deleted successfully`;
+    const reply = `Paziente e i relativi dati cancellati con successo`;
     return res.json({
         message: reply,
     });

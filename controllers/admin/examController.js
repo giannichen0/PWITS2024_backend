@@ -17,7 +17,7 @@ const {
 const getAllExams = asyncHandler(async (req, res) => {
     const exams = await Exam.find().select("-exam -__v -updatedAt").lean();
     if (!exams?.length) {
-        return res.status(404).json({ message: "No exams found" });
+        return res.status(404).json({ message: "Nessun esame trovato" });
     }
     
 
@@ -49,35 +49,35 @@ const createNewExam = asyncHandler(async (req, res) => {
     if (!content || !field || !patient || !doctor || !report) {
         return res
             .status(400)
-            .json({ message: "All fields are required except completed" });
+            .json({ message: "Tutti i campi sono richiesti, tranne lo stato" });
     }
     //id check
     if (!checkId(doctor))
-        return res.status(400).json({ message: "doctor is not valid" });
+        return res.status(400).json({ message: "Dottore non valido" });
     if (!checkId(patient))
-        return res.status(400).json({ message: "patient is not valid" });
+        return res.status(400).json({ message: "Paziente non valido" });
     if (!checkId(report))
-        return res.status(400).json({ message: "report is not valid" });
+        return res.status(400).json({ message: "Referto non valido" });
 
     //prima versione: Non permetto l'aggiunta di un esame se il dottore, il paziente e il referto non ci sono
-    //seconda versione: se non ci sono li creo
+    //seconda versione da implementare: se non ci sono li creo
     if (!(await checkDoctor(doctor)))
         return res
             .status(400)
             .json({
-                message: "the doctor associated to the exam is not defined",
+                message: "Il dottore associato all'esame non esiste",
             });
     if (!(await checkPatient(patient)))
         return res
             .status(400)
             .json({
-                message: "the patient associated to the exam is not defined",
+                message: "Il paziente associato all'esame non esiste",
             });
     if (!(await checkReport(report)))
         return res
             .status(400)
             .json({
-                message: "the report associated to the exam is not defined",
+                message: "Il referto associato all'esame non esiste",
             });
 
     const reportOBJ = await Report.findById(report).lean().exec();
@@ -86,11 +86,11 @@ const createNewExam = asyncHandler(async (req, res) => {
         return res
             .status(400)
             .json({
-                message: "the field in exam must match the field in report",
+                message: "Il campo medico del referto deve corrispondere al campo medico dell'esame",
             });
     if (patient.toString() !== reportOBJ.patient.toString())
         return res.status(400).json({
-            message: "the patient in exam must match the patient in report",
+            message: "Il paziente dell'esame deve corrispondere al paziente del referto",
         });
     const examObj = {
         content,
@@ -103,9 +103,9 @@ const createNewExam = asyncHandler(async (req, res) => {
 
     const exam = await Exam.create(examObj);
     if (exam) {
-        res.status(201).json({ message: `new exam ${content} created` });
+        res.status(201).json({ message: `Nuovo esame ${content} creato` });
     } else {
-        res.status(400).json({ message: "Invalid exam data " });
+        res.status(400).json({ message: "Dati dell'esame non validi" });
     }
 });
 
@@ -115,22 +115,22 @@ const createNewExam = asyncHandler(async (req, res) => {
 const updateExam = asyncHandler(async (req, res) => {
     //non posso aggiornare con paziente che differisce dal report. Exam dipende dal report e da lui eredito i campi
     const { id, content, field, patient, doctor, report, completed } = req.body;
-    if (!id) return res.status(400).json({ message: "missing ID" });
+    if (!id) return res.status(400).json({ message: "Id mancante" });
 
     //id check
     if (!checkId(id))
-        return res.status(400).json({ message: "ID is not valid" });
+        return res.status(400).json({ message: "Id non valido" });
     if (doctor != null && !checkId(doctor))
-        return res.status(400).json({ message: "doctor is not valid" });
+        return res.status(400).json({ message: "Dottore non valido" });
     if (patient != null && !checkId(patient))
-        return res.status(400).json({ message: "patient is not valid" });
+        return res.status(400).json({ message: "Paziente non valido" });
     if (report != null && !checkId(report))
-        return res.status(400).json({ message: "report is not valid" });
+        return res.status(400).json({ message: "Referto non valido" });
 
     const exam = await Exam.findById(id).exec();
 
     if (!exam || exam?._id.toString() !== id)
-        return res.status(404).json({ message: "exam not found" });
+        return res.status(404).json({ message: "Esam non trovato" });
 
     if (content) exam.content = content;
 
@@ -138,17 +138,17 @@ const updateExam = asyncHandler(async (req, res) => {
     if(report){
         //check se report corrisponde a un report(oggetto)
         if(await checkReport(report)){
-            //direttamente. Da definizione, il dottore di exa può variare dal dottore di report
+            //direttamente. Da definizione, il dottore di exam può variare dal dottore di report
             exam.report = report
         }else{
-            return res.status(400).json({message : "report not found"})
+            return res.status(400).json({message : "Referto non trovato"})
         }
         //se dottore esiste
         if(await checkDoctor(doctor)){
-            //direttamente. Da definizione, il dottore di exa può variare dal dottore di report
+            //direttamente. Da definizione, il dottore di exam può variare dal dottore di report
             exam.doctor = doctor
         }else{
-            return res.status(400).json({message : "invalid doctor"})
+            return res.status(400).json({message : "Dottore non valido"})
         }
         //Se il referto è presente, uso il paziente e il field del report che mi ha passato
         const reportObj = await Report.findById(report).lean().exec()
@@ -184,7 +184,7 @@ const updateExam = asyncHandler(async (req, res) => {
 
     await exam.save();
     
-    res.status(200).json({ message: "exam updated" });
+    res.status(200).json({ message: "esame aggiornato" });
 
     // if (patient != null) {
     //     if (await checkPatient(patient)) {
@@ -247,17 +247,17 @@ const updateExam = asyncHandler(async (req, res) => {
 //@access Private
 const deleteExam = asyncHandler(async (req, res) => {
     const { id } = req.body;
-    if (!id) return res.status(400).json({ message: "Missing ID" });
+    if (!id) return res.status(400).json({ message: "Id mancante" });
     if (!checkId(id)) {
-        return res.status(400).json({ message: "ID is not valid" });
+        return res.status(400).json({ message: "Id non valido" });
     }
 
     const exam = await Exam.findById(id).exec();
-    if (!exam) return res.status(404).json({ message: "exam non found" });
+    if (!exam) return res.status(404).json({ message: "Esame non trovato" });
 
     //aggiungi referenza al dottore deleted
     const result = await exam.deleteOne();
-    const reply = `exam data deleted successfully`;
+    const reply = `Esame cancellato con successo`;
     return res.json({
         message: reply,
     });

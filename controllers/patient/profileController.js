@@ -10,13 +10,13 @@ const jwtDecoder = require("../../helper/jwtDecoder");
 const getPatientProfile = asyncHandler(async (req, res) => {
     const patientId = await jwtDecoder(req, res);
     if (!patientId)
-        return res.status(400).json({ message: "missing patient id" });
+        return res.status(400).json({ message: "Id mancante" });
     if (!checkId(patientId))
-        return res.status(400).json({ message: "id is not valid" });
+        return res.status(400).json({ message: "Id non valido" });
 
     const patient = await Patient.findById(patientId).lean().exec();
     if (!patient || patient?._id.toString() !== patientId)
-        return res.status(400).json({ message: "patient not found" });
+        return res.status(400).json({ message: "Paziente non trovato" });
 
     res.json(patient);
 });
@@ -29,16 +29,16 @@ const updatePatient = asyncHandler(async (req, res) => {
     const { name, surname, password, email, telefono } = req.body;
     const id = await jwtDecoder(req, res);
     if (!id) {
-        return res.status(400).json({ message: "missing id" });
+        return res.status(400).json({ message: "Id mancante" });
     }
     if (!checkId(id)) {
-        return res.status(400).json({ message: "ID is not valid" });
+        return res.status(400).json({ message: "Id non valido" });
     }
 
     const patient = await Patient.findById(id).exec();
 
     if (!patient || patient?._id.toString() !== id) {
-        return res.status(400).json({ message: "patient not found" });
+        return res.status(400).json({ message: "Paziente non trovato" });
     }
     if (name) patient.name = name;
     if (surname) patient.surname = surname;
@@ -47,16 +47,20 @@ const updatePatient = asyncHandler(async (req, res) => {
         doctor.password = hashedPwd;
     }
     if (email) {
-        const duplicate = await Patient.findOne({ email }).lean().exec();
-        if (duplicate) {
-            return res.status(409).json({ message: "duplicate email" });
+        const adminDuplicate = await Admin.findOne({ email }).lean().exec();
+        const patientDuplicate = await Patient.findOne({ email }).lean().exec();
+        const doctorDuplicate = await Doctor.findOne({ email }).lean().exec();
+
+        if (adminDuplicate || patientDuplicate || doctorDuplicate) {
+            return res.status(409).json({ message: "Email già registrato" });
         }
+
         patient.email = email;
     }
     if (telefono) patient.telefono = telefono;
 
     await patient.save();
-    res.status(200).json({ message: "patient updated" });
+    res.status(200).json({ message: "Paziente aggiornato" });
 });
 
 module.exports = { getPatientProfile, updatePatient };

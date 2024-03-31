@@ -16,7 +16,7 @@ const getExams = asyncHandler(async (req, res) => {
     if (!exams?.length) {
         return res
             .status(200)
-            .json({ message: "No exams associated with logged doctor found" });
+            .json({ message: "Nessun esame associato al paziente trovato" });
     }
 
     //map del exam con il nome del dottore, del  paziente e del report

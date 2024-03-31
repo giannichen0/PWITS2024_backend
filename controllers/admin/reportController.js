@@ -11,7 +11,7 @@ const Exam = require("../../models/Exam");
 const getAllReports = asyncHandler(async (req, res) => {
   const reports = await Report.find().select("-report -__v -updatedAt").lean();
   if (!reports?.length) {
-    return res.status(404).json({ message: "No report found" });
+    return res.status(404).json({ message: "Nessun referto trovato" });
   }
 
   //map di report con il nome del dottore, del  paziente
@@ -35,30 +35,30 @@ const getAllReports = asyncHandler(async (req, res) => {
 const createNewReport = asyncHandler(async (req, res) => {
   const { content, field, patient, doctor } = req.body;
   if (!content || !field || !patient || !doctor)
-    return res.status(400).json({ message: "All fields are required except" });
+    return res.status(400).json({ message: "Tutti i campi sono richiesti" });
 
   if (!checkId(doctor))
-    return res.status(400).json({ message: "doctor is not valid" });
+    return res.status(400).json({ message: "Dottore non valido" });
 
   if (!checkId(patient))
-    return res.status(400).json({ message: "patient is not valid" });
+    return res.status(400).json({ message: "Paziente non valido" });
 
   //prima versione: Non permetto l'aggiunta di un esame se il dottore, il paziente e il referto non ci sono
   //seconda versione: se non ci sono li creo
   if (!(await checkDoctor(doctor)))
     return res
       .status(400)
-      .json({ message: "the doctor associated to the report is not defined" });
+      .json({ message: "Il dottore associato al referto non è definito" });
 
   if (!(await checkPatient(patient)))
     return res
       .status(400)
-      .json({ message: "the patient associated to the report is not defined" });
+      .json({ message: "Il paziente associato al referto non è definito" });
 
   const patientDoctor = await Patient.findById(patient).lean().exec();
   if (doctor.toString() !== patientDoctor.doctor.toString())
     return res.status(400).json({
-      message: "the doctor on the report must match the patient's doctor",
+      message: "Il dottore sul referto deve corrispondere al dottore del paziente ",
     });
 
   const reportObj = {
@@ -69,9 +69,9 @@ const createNewReport = asyncHandler(async (req, res) => {
   };
   const report = await Report.create(reportObj);
   if (report) {
-    res.status(201).json({ message: `new report ${content} created` });
+    res.status(201).json({ message: `nuovo referto ${content} creato` });
   } else {
-    res.status(400).json({ message: "Invalid report data " });
+    res.status(400).json({ message: "Dati del referto non validi " });
   }
 });
 
@@ -81,19 +81,19 @@ const createNewReport = asyncHandler(async (req, res) => {
 const updateReport = asyncHandler(async (req, res) => {
   const { id, content, field, patient, doctor } = req.body;
 
-  if (!id) return res.status(400).json({ message: "missing ID" });
+  if (!id) return res.status(400).json({ message: "Id mancante" });
 
   //id check
-  if (!checkId(id)) return res.status(400).json({ message: "ID is not valid" });
+  if (!checkId(id)) return res.status(400).json({ message: "Id non valido" });
   if (doctor != null && !checkId(doctor))
-    return res.status(400).json({ message: "doctor is not valid" });
+    return res.status(400).json({ message: "Dottore non valido" });
   if (patient != null && !checkId(patient))
-    return res.status(400).json({ message: "patient is not valid" });
+    return res.status(400).json({ message: "Paziente non valido" });
 
   const report = await Report.findById(id).exec();
 
   if (!report || report?._id.toString() !== id)
-    return res.status(404).json({ message: "exam not found" });
+    return res.status(404).json({ message: "Referto non valido" });
 
   if (content) report.content = content;
   if (field) {
@@ -104,13 +104,13 @@ const updateReport = asyncHandler(async (req, res) => {
   const patientDoctor = patient != null ? await Patient.findById(patient).lean().exec() : report;
   if (doctor != null && doctor.toString() !== patientDoctor.doctor.toString()) {
     return res.status(400).json({
-      message: "the doctor on the report must match the patient's doctor",
+      message: "Il dottore sul referto deve corrispondere al dottore del paziente",
     });
   }
 
   if (doctor != null) {
     if (await checkDoctor(doctor)) report.doctor = doctor;
-    else return res.status(400).json({ message: "The doctor doesn't exist" });
+    else return res.status(400).json({ message: "Il dottore non esiste" });
   }
   if (patient != null) {
     if (await checkPatient(patient)){
@@ -118,11 +118,11 @@ const updateReport = asyncHandler(async (req, res) => {
         await Exam.updateMany({ report: report._id }, { $set: { patient: patient } });
         
     }
-    else return res.status(400).json({ message: "the patient doesn't exists" });
+    else return res.status(400).json({ message: "Il paziente non esiste" });
   }
 
   await report.save();
-  res.status(200).json({ message: "report updated" });
+  res.status(200).json({ message: "Referto aggiornato" });
 });
 
 //@desc delete a report
@@ -130,17 +130,17 @@ const updateReport = asyncHandler(async (req, res) => {
 //@access Private
 const deleteReport = asyncHandler(async (req, res) => {
   const { id } = req.body;
-  if (!id) return res.status(400).json({ message: "Missing ID" });
-  if (!checkId(id)) return res.status(400).json({ message: "ID is not valid" });
+  if (!id) return res.status(400).json({ message: "Id mancante" });
+  if (!checkId(id)) return res.status(400).json({ message: "Id non valido" });
 
   const report = await Report.findById(id).exec();
-  if (!report) return res.status(404).json({ message: "report non found" });
+  if (!report) return res.status(404).json({ message: "Referto non valido" });
 
   await Exam.deleteMany({ report: report._id });
 
   //aggiungi referenza al dottore deleted
   const result = await report.deleteOne();
-  const reply = `report data deleted successfully`;
+  const reply = `Dati del referto eliminati con successo`;
   return res.json({
     message: reply,
   });

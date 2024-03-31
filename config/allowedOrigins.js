@@ -5,7 +5,6 @@ const allowedOrigins  = [
 
     "pwits2024-frontend.onrender.com"
 
-    //aggiungere url quando frontend è in produzione
 ]
 
 module.exports = allowedOrigins

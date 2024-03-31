@@ -14,7 +14,7 @@ const getReports = asyncHandler(async (req, res) => {
     const patientId = await jwtDecoder(req, res);
     const reports = await Report.find({ patient: patientId }).select("-report -__v -updatedAt").lean();
     if (!reports?.length) {
-        return res.status(200).json({ message: "the patient have no reports" });
+        return res.status(200).json({ message: "Nessun referto associato al paziente trovato" });
     }
 
     //map di report con il nome del dottore, del  paziente

@@ -13,7 +13,7 @@ const getReports = asyncHandler(async (req, res) => {
     const doctorId = await jwtDecoder(req, res);
     const reports = await Report.find({ doctor: doctorId }).select("-report -__v -updatedAt").lean();
     if (!reports?.length) {
-        return res.status(200).json({ message: "the doctor have no reports" });
+        return res.status(200).json({ message: "Il dottore non ha nessun referto" });
     }
 
     //map di report con il nome del dottore, del  paziente
@@ -42,28 +42,28 @@ const createNewReport = asyncHandler(async (req, res) => {
     if (!content || !field || !patient || !doctor)
         return res
             .status(400)
-            .json({ message: "All fields are required except" });
+            .json({ message: "Tutti i campi sono richiesti" });
 
     //possibile eliminare questi due check
     if (!checkId(doctor))
-        return res.status(400).json({ message: "doctor is not valid" });
+        return res.status(400).json({ message: "Dottore non valido" });
     if (!(await checkDoctor(doctor)))
         return res.status(400).json({
-            message: "the doctor associated to the report is not defined",
+            message: "Il dottore associato al referto non è valido",
         });
 
     if (!checkId(patient))
-        return res.status(400).json({ message: "patient is not valid" });
+        return res.status(400).json({ message: "Paziente non valido" });
 
     if (!(await checkPatient(patient)))
         return res.status(400).json({
-            message: "the patient associated to the report is not defined",
+            message: "Il paziente associato al referto non è valido",
         });
 
     const patientDoctor = await Patient.findById(patient).lean().exec();
     if (doctor.toString() !== patientDoctor.doctor.toString())
         return res.status(400).json({
-            message: "the doctor on the report must match the patient's doctor",
+            message: "Il dottore deve corrispondere al dottore sul referto",
         });
 
     const reportObj = {
@@ -74,9 +74,9 @@ const createNewReport = asyncHandler(async (req, res) => {
     };
     const report = await Report.create(reportObj);
     if (report) {
-        res.status(201).json({ message: `new report ${content} created` });
+        res.status(201).json({ message: `Nuovo referto ${content} creato` });
     } else {
-        res.status(400).json({ message: "Invalid report data " });
+        res.status(400).json({ message: "Dati del referto non validi" });
     }
 });
 
@@ -86,21 +86,21 @@ const createNewReport = asyncHandler(async (req, res) => {
 const updateReport = asyncHandler(async (req, res) => {
     const { id, content, field, patient} = req.body;
 
-    if (!id) return res.status(400).json({ message: "missing ID" });
+    if (!id) return res.status(400).json({ message: "Id mancate" });
     const doctor = await jwtDecoder(req,res)
     //id check
     if (!checkId(id))
-        return res.status(400).json({ message: "ID is not valid" });
+        return res.status(400).json({ message: "Id non valido" });
     //possibile eliminare il check
     if (doctor != null && !checkId(doctor))
-        return res.status(400).json({ message: "doctor is not valid" });
+        return res.status(400).json({ message: "Dottore non valido" });
     if (patient != null && !checkId(patient))
-        return res.status(400).json({ message: "patient is not valid" });
+        return res.status(400).json({ message: "Paziente non valido" });
 
     const report = await Report.findById(id).exec();
 
     if (!report || report?._id.toString() !== id)
-        return res.status(404).json({ message: "exam not found" });
+        return res.status(404).json({ message: "referto non trovato" });
 
     if (content) report.content = content;
     if (field) {
@@ -119,7 +119,7 @@ const updateReport = asyncHandler(async (req, res) => {
         if (doctor.toString() !== patientDoctor.doctor.toString())
             return res.status(400).json({
                 message:
-                    "the doctor on the report must match the patient's doctor",
+                    "Il dottore sul reporto deve corrispondere al dottore del paziente",
             });
     }
 
@@ -128,7 +128,7 @@ const updateReport = asyncHandler(async (req, res) => {
         else
             return res
                 .status(400)
-                .json({ message: "The doctor doesn't exist" });
+                .json({ message: "Il dottore non esiste" });
     }
     if (patient != null) {
         if (await checkPatient(patient)) {
@@ -137,11 +137,11 @@ const updateReport = asyncHandler(async (req, res) => {
         } else
             return res
                 .status(400)
-                .json({ message: "the patient doesn't exists" });
+                .json({ message: "Il paziente non esiste" });
     }
 
     await report.save();
-    res.status(200).json({ message: "report updated" });
+    res.status(200).json({ message: "Referto aggiornato" });
 });
 
 //@desc delete an logged doctor's report
@@ -149,20 +149,20 @@ const updateReport = asyncHandler(async (req, res) => {
 //@access Private
 const deleteReport = asyncHandler(async (req, res) => {
     const { id } = req.body;
-    if (!id) return res.status(400).json({ message: "Missing ID" });
-    if (!checkId(id)) return res.status(400).json({ message: "ID is not valid" });
+    if (!id) return res.status(400).json({ message: "Id mancante" });
+    if (!checkId(id)) return res.status(400).json({ message: "Id non valido" });
   
     const report = await Report.findById(id).exec();
     const doctor = await jwtDecoder(req,res);
 
-    if(report.doctor != doctor) return res.status(400).json({message : "the logged doctor is different than the report's doctor"})
-    if (!report) return res.status(404).json({ message: "report non found" });
+    if(report.doctor != doctor) return res.status(400).json({message : "Il dottore loggato è diverso dal dottore sul referto"})
+    if (!report) return res.status(404).json({ message: "Referto non trovato" });
   
     await Exam.deleteMany({ report: report._id });
   
     //aggiungi referenza al dottore deleted
     const result = await report.deleteOne();
-    const reply = `report data deleted successfully`;
+    const reply = `Dati del referto eliminati con successo`;
     return res.json({
       message: reply,
     });

@@ -13,7 +13,7 @@ const login = asyncHandler(async (req, res) => {
     //check se sono validi
     const { email, password } = req.body;
     if (!email || !password)
-        res.status(400).json({ message: "all fields required" });
+        res.status(400).json({ message: "Tutti i campi sono richiesti" });
 
     //check sul ruolo e esistenza di user
     let role;
@@ -31,7 +31,7 @@ const login = asyncHandler(async (req, res) => {
             } else {
                 role = null;
                 res.status(401).json({
-                    message: "unauthorized. User not found",
+                    message: "Unauthorized",
                 });
             }
         }
@@ -40,7 +40,7 @@ const login = asyncHandler(async (req, res) => {
     //check su password
     const match = await bcrypt.compare(password, foundUser.password);
     if (!match)
-        return res.status(401).json({ message: "unauthorized. Password" });
+        return res.status(401).json({ message: "Unauthorized" });
 
     //creazione di access token
     const accessToken = jwt.sign(
@@ -95,7 +95,7 @@ const refresh = (req, res) => {
         process.env.REFRESH_TOKEN_SECRET,
         asyncHandler(async (err, decoded) => {
             
-            if (err) return res.status(403).json({ message: "forbidden" });
+            if (err) return res.status(403).json({ message: "Forbidden" });
             
             const accessToken = jwt.sign(
                 {
@@ -121,11 +121,11 @@ const refresh = (req, res) => {
 const logout = (req, res) => {
     const cookies = req.cookies;
     if (!cookies?.jwt)
-        return res.status(200).json({ message: "the cookies doesn't exist" }); //No content
+        return res.status(200).json({ message: "Impossibile fare il logout" }); //No content
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None"
     //,secure: true 
 });
-    res.json({ message: "Cookie cleared" });
+    res.json({ message: "Logouts" });
 };
 
 module.exports = { login, refresh, logout };

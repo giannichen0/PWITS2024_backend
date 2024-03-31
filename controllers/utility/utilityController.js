@@ -24,14 +24,14 @@ const emailSender = asyncHandler(async (req, res) => {
     const { doctor, patient, exam } = req.body;
     if (!doctor || !exam)
         return res.status(400).json({
-            message: "missing data. Doctor and exam are required",
+            message: "Dati mancanti. Dottore e Esami sono richiesti",
         });
 
     if (!checkId(doctor))
-        return res.status(400).json({ message: "invalid doctor id" });
+        return res.status(400).json({ message: "Dottore non valido" });
     //if (checkId(patient)) return res.status(400).json({ message: "invalid patient id" });
     if (!checkId(exam))
-        return res.status(400).json({ message: "invalid exam id" });
+        return res.status(400).json({ message: "Esame non valido" });
 
     const doctorObj = await checkDoctor(doctor);
     const examObj = await checkExam(exam);
@@ -41,17 +41,17 @@ const emailSender = asyncHandler(async (req, res) => {
             : await Patient.findById(examObj.patient).lean().exec();
 
     if (!doctorObj)
-        return res.status(400).json({ message: "doctor not found" });
+        return res.status(400).json({ message: "Dottore non trovato" });
     if (!patientObj)
-        return res.status(400).json({ message: "patient not found" });
-    if (!examObj) return res.status(400).json({ message: "exam not found" });
+        return res.status(400).json({ message: "Paziente non trovato" });
+    if (!examObj) return res.status(400).json({ message: "Esame non trovato" });
 
     if (
         patientObj._id.toString() !== examObj.patient.toString()
     )
         return res
             .status(400)
-            .json({ message: "the doctor must be the same patient's doctor" });
+            .json({ message: "Il dottore deve corrisondere al dottore del paziente" });
 
     // const timeDifferenceMs = Date.now() - examObj.createdAt.getTime();
     // if (!exam.completed && timeDifferenceMs > 60 * 24 * 1000) 
@@ -111,7 +111,6 @@ const emailSender = asyncHandler(async (req, res) => {
                 {
                     from: "chengianni38@gmail.com",
                     to : email,
-                    //to: "gianni.chen@fitstic-edu.com",
                     html: htmlContent,
                     subject: "Solecitazione Esame " + examObj._id,
                 },
@@ -125,12 +124,12 @@ const emailSender = asyncHandler(async (req, res) => {
             );
         })
             .then(() => {
-                return res.status(200).json({ message: "mail sended" });
+                return res.status(200).json({ message: "Email inviato" });
             })
             .catch((err) => {
                 return res
                     .status(500)
-                    .json({ message: "impossible to send email" + err });
+                    .json({ message: "Impossibile inviare mail. Errore: " + err });
             });
     }
 
@@ -142,12 +141,6 @@ const emailSender = asyncHandler(async (req, res) => {
 //@access Private
 const pdfGenerator = asyncHandler(async (req, res) => {
     const {doctorId, patientId, examId, reportId} = req.body
-    // const doctorId = "65d7b5220cb368577b692517";
-    // const patientId = "65d7a960ea4fca27e3b32243";
-    // const examId = "65da347cf238aa23b6b77fee";
-    // const reportId = "65da1566bc919ca93233a242";
-
-
 
     const doctor = await Doctor.findById(doctorId).lean().exec();
     const patient = await Patient.findById(patientId).lean().exec();
@@ -199,16 +192,13 @@ const pdfGenerator = asyncHandler(async (req, res) => {
       });
     const page = await browser.newPage();
 
-    // Set HTML content on the page
     await page.setContent(htmlContent);
 
-    // Generate PDF
     const buffer = await page.pdf({ format: "A4", printBackground: true});
 
-    // Close the browser
     await browser.close();
 
-    // Stream PDF buffer back to the client
+    // Stream PDF buffer
     res.setHeader("Content-Type", "application/pdf");
     res.send(buffer);
 });

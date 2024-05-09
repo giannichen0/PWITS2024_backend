@@ -5,7 +5,7 @@ const Exam = require("../../models/Exam");
 const Report = require("../../models/Report");
 const asyncHandler = require("express-async-handler");
 const nodemailer = require("nodemailer");
-const puppeteer = require("puppeteer")
+const puppeteer = require("puppeteer");
 const path = require("path");
 
 const fsPromises = require("fs").promises;
@@ -46,30 +46,26 @@ const emailSender = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Paziente non trovato" });
     if (!examObj) return res.status(400).json({ message: "Esame non trovato" });
 
-    if (
-        patientObj._id.toString() !== examObj.patient.toString()
-    )
-        return res
-            .status(400)
-            .json({ message: "Il dottore deve corrisondere al dottore del paziente" });
+    if (patientObj._id.toString() !== examObj.patient.toString())
+        return res.status(400).json({
+            message: "Il dottore deve corrisondere al dottore del paziente",
+        });
 
     // const timeDifferenceMs = Date.now() - examObj.createdAt.getTime();
-    // if (!exam.completed && timeDifferenceMs > 60 * 24 * 1000) 
-    
+    // if (!exam.completed && timeDifferenceMs > 60 * 24 * 1000)
+
     const createdAtDate = new Date(examObj.createdAt);
     const currentDate = new Date();
     const differenceInDays = Math.floor(
-        (currentDate - createdAtDate) / (1000 * 60 * 60
-           // *24 differenza in ore cosi.
-            )
+        (currentDate - createdAtDate) / (1000 * 60 * 60)
+        // *24 differenza in ore cosi.
     );
-    if(differenceInDays > 5)
-    {
+    if (differenceInDays > 5) {
         const doctorExam = await Doctor.findById(examObj.doctor).lean().exec();
         const email = patientObj.email;
 
         const replacements = {
-            "{{data}}": new Date().toLocaleDateString("it-IT", {
+            "{{data}}": examObj.createdAt.toLocaleDateString("it-IT", {
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",
@@ -84,7 +80,7 @@ const emailSender = asyncHandler(async (req, res) => {
             "{{examContent}}": examObj.content,
             "{{completed}}":
                 examObj.completed == true ? "effettuato" : "non effettuato",
-            "{{examCreatedAt}}": examObj.createdAt.toLocaleDateString("it-IT", {
+            "{{examCreatedAt}}": new Date().toLocaleDateString("it-IT", {
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",
@@ -110,7 +106,7 @@ const emailSender = asyncHandler(async (req, res) => {
             transport.sendMail(
                 {
                     from: "chengianni38@gmail.com",
-                    to : email,
+                    to: email,
                     html: htmlContent,
                     subject: "Solecitazione Esame " + examObj._id,
                 },
@@ -127,9 +123,9 @@ const emailSender = asyncHandler(async (req, res) => {
                 return res.status(200).json({ message: "Email inviato" });
             })
             .catch((err) => {
-                return res
-                    .status(500)
-                    .json({ message: "Impossibile inviare mail. Errore: " + err });
+                return res.status(500).json({
+                    message: "Impossibile inviare mail. Errore: " + err,
+                });
             });
     }
 
@@ -140,7 +136,7 @@ const emailSender = asyncHandler(async (req, res) => {
 //@route PUT /utility/pdf
 //@access Private
 const pdfGenerator = asyncHandler(async (req, res) => {
-    const {doctorId, patientId, examId, reportId} = req.body
+    const { doctorId, patientId, examId, reportId } = req.body;
 
     const doctor = await Doctor.findById(doctorId).lean().exec();
     const patient = await Patient.findById(patientId).lean().exec();
@@ -149,7 +145,7 @@ const pdfGenerator = asyncHandler(async (req, res) => {
     const doctorReport = await Doctor.findById(report.doctor).lean().exec();
 
     const replacements = {
-        "{{data}}": new Date().toLocaleDateString("it-IT", {
+        "{{data}}": exam.createdAt.toLocaleDateString("it-IT", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -163,7 +159,7 @@ const pdfGenerator = asyncHandler(async (req, res) => {
         "{{examContent}}": exam.content,
         "{{completed}}":
             exam.completed == true ? "effettuato" : "non effettuato",
-        "{{examCreatedAt}}": exam.createdAt.toLocaleDateString("it-IT", {
+        "{{examCreatedAt}}": new Date().toLocaleDateString("it-IT", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -180,21 +176,21 @@ const pdfGenerator = asyncHandler(async (req, res) => {
     );
     const browser = await puppeteer.launch({
         args: [
-          "--disable-setuid-sandbox",
-          "--no-sandbox",
-          "--single-process",
-          "--no-zygote",
+            "--disable-setuid-sandbox",
+            "--no-sandbox",
+            "--single-process",
+            "--no-zygote",
         ],
         executablePath:
-          process.env.NODE_ENV === "production"
-            ? process.env.PUPPETEER_EXECUTABLE_PATH
-            : puppeteer.executablePath(),
-      });
+            process.env.NODE_ENV === "production"
+                ? process.env.PUPPETEER_EXECUTABLE_PATH
+                : puppeteer.executablePath(),
+    });
     const page = await browser.newPage();
 
     await page.setContent(htmlContent);
 
-    const buffer = await page.pdf({ format: "A4", printBackground: true});
+    const buffer = await page.pdf({ format: "A4", printBackground: true });
 
     await browser.close();
 

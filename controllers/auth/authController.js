@@ -125,7 +125,7 @@ const logout = (req, res) => {
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None"
     //,secure: true 
 });
-    res.json({ message: "Logouts" });
+    res.json({ message: "Ciao Ciao" });
 };
 
 module.exports = { login, refresh, logout };

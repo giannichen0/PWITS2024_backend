@@ -31,7 +31,7 @@ app.use(express.json());
 //parse dei cookies
 app.use(cookieParser());
 
-app.set('trust proxy', 1)
+app.set('trust proxy', 2)
 app.get('/ip', (request, response) => response.send(request.ip))
 
 //serve public files as css
